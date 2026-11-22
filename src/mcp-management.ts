@@ -97,7 +97,7 @@ export class McpManagement {
       ...[...this.saved.values()].map(row => describe(row.id, row.config, 'web', runtime.find(entry => entry.id === this.entries.get(row.id)))),
     ]
     return { services, changing: this.control.changing, revision: this.control.revision, configPath: this.configPath, notice: this.loadError,
-      defaults: { command: process.execPath, args: ['scripts/mcp-server.mjs'], cwd: fileURLToPath(new URL('../', import.meta.url)) } }
+      defaults: { command: process.execPath, args: ['simulation/platform-mcp/server.mjs', '--platform', 'P1'], cwd: fileURLToPath(new URL('../', import.meta.url)) } }
   }
 
   // 同名服务即使已停用也保留其命名空间，避免恢复后发生工具覆盖。

@@ -53,8 +53,7 @@ export function parseSkill(markdown: unknown) {
 
 export class SkillManagement {
   private skills = new Map<string, SavedSkill & ParsedSkill>()
-  // 默认保留原有行为：水下技能需主动启用，标书及其他新发现目录技能默认可用。
-  private directoryEnabled = new Map<string, boolean>([['underwater-simulation', false]])
+  private directoryEnabled = new Map<string, boolean>()
   // 即使提供方暂时停用，管理页仍可展示上次发现的目录项及其持久化状态。
   private directoryCatalog = new Map<string, SkillCandidate>()
   private loadError = ''
@@ -69,7 +68,8 @@ export class SkillManagement {
     try {
       const value = JSON.parse(await readFile(this.configPath, 'utf8'))
       const legacy = value.version === 1 ? legacySchema.parse(value) : undefined
-      const saved = legacy ? { skills: legacy.skills, directoryEnabled: { 'underwater-simulation': legacy.builtinEnabled } }
+      // v1 的 builtinEnabled 只用于已移除的内置技能。
+      const saved = legacy ? { skills: legacy.skills, directoryEnabled: {} }
         : documentSchema.parse(value)
       for (const row of saved.skills) {
         const parsed = parseSkill(row.markdown)
@@ -104,7 +104,7 @@ export class SkillManagement {
     return [...this.skills.values()].map(skill => ({ ...skill, source: 'web' as const, editable: true }))
   }
 
-  private isDirectoryEnabled(name: string): boolean { return this.directoryEnabled.get(name) ?? (name !== 'underwater-simulation') }
+  private isDirectoryEnabled(name: string): boolean { return this.directoryEnabled.get(name) ?? true }
 
   private async directories(): Promise<SkillCandidate[]> {
     const files = this.ctx.get('demoSkillFiles')
@@ -163,7 +163,7 @@ export class SkillManagement {
     const row = this.rows().find(skill => skill.id === id)
     if (row) return row
     const external = (await this.directories()).find(skill => id === 'directory:' + skill.name
-      || id === 'external:' + skill.name || (id === 'builtin:underwater-simulation' && skill.name === 'underwater-simulation'))
+      || id === 'external:' + skill.name)
     if (!external?.path) throw new ControlError(404, '找不到这个技能。')
     // 路径只能来自官方提供方实际发现的条目，浏览器不能指定任意文件路径。
     const markdown = await readFile(external.path, 'utf8')

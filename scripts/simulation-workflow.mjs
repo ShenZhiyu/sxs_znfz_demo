@@ -1,4 +1,4 @@
-/** 无 Agent 的模板脚本入口，复用与 MCP 完全相同的规划、资源和 DAG 调度流程。 */
+/** 独立的模板脚本入口，按模板执行规划、资源申请和 DAG 调度。 */
 import { SimulationWorkflow } from '../simulation/workflow.mjs'
 // 仅接受规模，场景参数扩展优先放进模板 defaults，保持命令可复现。
 const workflow = new SimulationWorkflow()

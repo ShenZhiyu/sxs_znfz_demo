@@ -1,15 +1,21 @@
 # dsh-demo：水下通信链路仿真 Agent 与 Web 调试台
 
-这个目录是学习用的独立项目：显式加载七个 dsh 核心插件，再接上终端或网页入口，以及本机 MCP 加法与仿真服务。网页提供真实插件启停、原始模型数据、调用过程检查、MCP 服务注册管理和 Skill 管理；技能运行时使用官方 Skill 插件。必要的框架源码已保存在项目内部，安装和运行都不需要相邻的 `deepseek-harness`。你可以先沿着本目录理解“输入如何到达模型、工具如何执行、结果如何回到用户”。
+这个目录是学习用的独立项目：显式加载七个 dsh 核心插件，再接上终端或网页入口，以及五个平台的 MCP 工具。网页提供真实插件启停、原始模型数据、调用过程检查、MCP 服务注册管理和 Skill 管理；技能运行时使用官方 Skill 插件。必要的框架源码已保存在项目内部，安装和运行都不需要相邻的 `deepseek-harness`。你可以先沿着本目录理解“输入如何到达模型、工具如何执行、结果如何回到用户”。
 
-现在可以通过 Agent 演示完整的水下通信仿真：**先规划规模、查询集群、申请配额，再按模板执行信道 → 通信 → 链路，并持续查看任务状态**。资源是本机演示账本，计算是简化数值模型。详细的节点依赖图、工具参数、模板字段与真实后台替换方法见 [simulation/README.md](simulation/README.md)。
+终端和 Web Agent 默认接入五平台的 24 个 MCP 工具。本地联调先启动 HTTP Mock，再启动 Agent。
 
 ```bash
 npm ci
+npm run mock:platforms
+# 在另一个终端执行
 npm run web -- --offline
 ```
 
-在离线网页手动发送 demo 专用命令 `/sim-resources` 查看资源，再发送 `/simulate small`，或 `/simulate medium {"distanceM":2000,"seed":87}`。右侧新增“仿真任务”标签，可实时查看配额、各阶段/节点、依赖、串行锁、完整事件与结果，并取消任务或下载 JSON。停止生成不会取消后台任务。这些仿真命令用于离线演示，不是通用 Agent 命令，不会出现在聊天补全中。
+在网页或离线终端发送 `/mcp mcp__environment__get_environment_config` 验证调用。Agent 会通过 stdio MCP 中间层请求 HTTP 平台。工具目录、服务地址配置和文件交接见[五平台 HTTP Mock 与 MCP 接入](simulation/platform-mock/README.md)。
+
+在真实模型模式下运行 `npm run web`，在聊天中发送 `/communication-link-simulation` 可启动分阶段确认流程。Skill 会在环境、声场、信号处理、回放和评估阶段分别询问参数，也支持在 P2/P3 用用户自有算法替代平台处理。离线模式可验证 Skill 加载，并用 `/mcp` 手动调用单项工具。[链路仿真 Skill](skills/communication-link-simulation/SKILL.md)
+
+本地模板仿真可独立通过 `npm run simulation -- small` 运行。[本地模板仿真说明](simulation/README.md)
 
 教学注释覆盖本目录维护的 TypeScript、JavaScript、HTML、CSS、YAML 和 `.gitignore`。代码旁的中文注释解释语法、执行时机和资源归属。JSON 不允许注释，因此 `package.json`、`tsconfig.json` 保持标准格式，本文提供逐行解释版。`.dsh/`、`node_modules/` 是运行产物与依赖。`vendor/harness/` 是随项目保存的框架源码副本，保留原有注释与许可证。
 
@@ -59,9 +65,9 @@ npm run demo -- --offline
 npm run web -- --offline
 ```
 
-在浏览器打开日志中的地址，默认是 `http://127.0.0.1:3080`。Enter 发送，Shift + Enter 换行；“新对话”会取消当前请求并释放旧会话。Ctrl+C 停止服务。端口冲突时可用 `npm run web -- --offline --port 3081`；`--port 0` 让系统自动分配空闲端口。
+在浏览器打开日志中的地址，默认是 `http://127.0.0.1:3080`。Enter 发送，Shift + Enter 换行；“新对话”会取消当前请求并释放旧会话。Ctrl+C 停止服务。端口冲突时可用 `npm run web -- --offline --port 3082`；`--port 0` 让系统自动分配空闲端口。
 
-两个入口都自动启动本机 MCP 服务，无需手动执行 `scripts/mcp-server.mjs`。`--offline` 关闭外部模型请求，MCP 加法仍通过真实本机子进程执行。终端也支持 `/mcp-add 2 3`，输入 `/exit` 退出。
+两个入口都会自动启动五平台 MCP 中间层。本地平台 Mock 单独用 `npm run mock:platforms` 启动。`--offline` 使用离线模型，仍可通过 `/mcp` 发送实际工具请求。终端输入 `/exit` 退出。
 
 ### 常用命令速查
 
@@ -73,7 +79,7 @@ npm run web -- --offline
 | `npm run web -- --offline` | 启动离线 Web 调试台和本机 MCP 服务。 |
 | `npm run demo -- --offline` | 启动离线终端对话和本机 MCP 服务。 |
 | `npm run web` / `npm run demo` | 使用真实模型，需要配置 API Key。 |
-| `npm run web -- --offline --port 3081` | 指定 Web 端口；`0` 表示让系统分配。 |
+| `npm run web -- --offline --port 3082` | 指定 Web 端口；`0` 表示让系统分配。 |
 | `npm run config -- --offline` | 打印终端的插件组合，不启动对话。 |
 | `npm run config:web -- --offline` | 打印 Web 的插件组合，不启动 HTTP 服务。 |
 | `npm run build` | 检查项目内部的框架源码并生成类型声明。 |
@@ -91,7 +97,7 @@ npm run web -- --offline
 
 工具调用前的模型文字标为“助手说明”，后续生成的答复标为“助手回答”，正文继续支持 Markdown。工具卡片显示工具名、所属步骤和执行状态，短结果直接展示；展开卡片可查看调用参数、完整工具返回内容和原始结果事件 JSON。复杂 JSON 默认折叠，避免与助手回答混在一起。参数和工具返回按纯文本展示，里面的 HTML 或 Markdown 不会作为助手回答执行或渲染。
 
-多个工具按调用 ID 配对结果，即使并行调用乱序返回也不会串行错配。断线时保留已有回答和工具结果，尚未收到结果的调用显示“结果未确认”，不把后台可能仍在执行的任务误报为失败。轮次“已完成”只说明本次对话生成结束，后台仿真状态仍以“仿真任务”页面为准。点击“新对话”会清空左侧并从第 1 轮重新编号。
+多个工具按调用 ID 配对结果，即使并行调用乱序返回也不会串行错配。断线时保留已有回答和工具结果，尚未收到结果的调用显示“结果未确认”，不把后台可能仍在执行的任务误报为失败。轮次“已完成”只说明本次对话生成结束，平台任务状态以对应的查询工具返回为准。点击“新对话”会清空左侧并从第 1 轮重新编号。
 
 右侧提供六个视图：
 
@@ -100,7 +106,6 @@ npm run web -- --offline
 | 插件 | 按树形展开配置容器，查看并启停七个核心插件、模型适配器、MCP 客户端及官方 Skill 插件；切换依赖视图追踪服务提供者与消费者。 | Loader 的真实父子归属、enabled 和 Fiber 状态。 |
 | 原始输出 | 查看完整模型分片、真实 HTTP/SSE 响应正文、请求 JSON 和模型接口返回的思考文本。 | 适配器流及同次异步调用内实际收到的 HTTP 字节。 |
 | 调用过程 | 按时间查看用户消息、Agent 轮次/步骤、请求、HTTP、工具事件和结束结果；展开查看全部 payload。 | Agent 会话事件、模型中间件和传输观察器。 |
-| 仿真任务 | 查看集群资源、任务阶段/节点状态、依赖和串行约束、报告、取消与 JSON 下载。 | 通过 MCP 查询同一后台模板运行器的资源账本、进度和结果。 |
 | MCP 服务 | 注册、编辑、启停、重连和删除服务，展开查看工具说明及完整参数定义。 | 真实 MCP 客户端、Loader 状态和 agent 当前 ToolRuntime。 |
 | Skill 管理 | 搜索、新建、编辑、启停、复制、删除、预览与导入导出 SKILL.md。 | 网页配置、官方本地目录、调用策略和实际 skill 工具状态。 |
 | 文件 | 搜索工作目录、下载上传资料和 Agent 产物，将已上传文件重新添加到消息。 | `work/` 中实际存在的文件及持久化上传回执。 |
@@ -157,20 +162,20 @@ tool-bash
 
 ### 在网页注册和管理 MCP 服务
 
-运行 `npm run web -- --offline` 后，点击右侧 **MCP 服务**。已有 `demo` 服务来自 YAML，默认提供 14 个工具；展开“可用工具”可以查看每个工具的模型公开名称、说明和完整参数 schema，不需要先发送聊天消息。
+运行 `npm run web -- --offline` 后，点击右侧 **MCP 服务**。YAML 配置的五组 MCP 服务共提供 24 个工具；展开“可用工具”可以查看每个工具的模型公开名称、说明和完整参数 schema，不需要先发送聊天消息。
 
 体验新增本机服务：
 
 1. 点击 **填入本机示例**，会自动填好当前 Node 路径、启动参数和项目目录，并选择一个未使用的服务名。
 2. 保持“保存后启用连接”勾选，点击 **保存服务**。
-3. 卡片显示真实客户端状态；工具发现完成后可以展开目录。新服务使用自己的名称，例如 `mcp__local-example__add`。
+3. 卡片显示真实客户端状态；工具发现完成后可以展开目录。新服务使用自己的名称，例如 `mcp__local-example__get_environment_config`。
 4. 使用 **停用 / 启用** 或 **重新连接** 管理连接；**编辑** 修改参数；**删除配置** 同时断开连接、移除工具和持久化记录。
 
 注册外部服务时选择对应方式：
 
 | 连接方式 | 填写内容 | 示例 |
 | --- | --- | --- |
-| stdio | 程序、JSON 参数数组、工作目录、可选环境变量对象。 | 程序 `node`，参数 `["scripts/mcp-server.mjs"]`，目录为本项目根目录。 |
+| stdio | 程序、JSON 参数数组、工作目录、可选环境变量对象。 | 程序 `node`，参数 `["simulation/platform-mcp/server.mjs","--platform","P1"]`，目录为本项目根目录。 |
 | Streamable HTTP | MCP 的 http(s) 地址、可选 Headers 对象。 | 地址 `http://127.0.0.1:8000/mcp`，Headers 可填 `{"Authorization":"Bearer …"}`。 |
 
 stdio 参数直接传给程序，不经过 shell 拆分或插值；页面不会替你安装外部 MCP 程序。服务名称需要唯一，使用 1–32 位字母、数字、下划线或横线。互为双下划线前缀的名称也会被拒绝，以便准确区分工具归属。勾选启用后才会启动本机程序或发起 HTTP 连接；也可以取消勾选，仅保存配置。
@@ -183,7 +188,7 @@ YAML 服务可以启停、重新连接和查看工具，参数编辑或删除需
 
 “客户端运行中”表示插件已运行，工具目录显示当前实际可用的工具；它不是额外的网络心跳检测。连接失败会保留配置并显示错误，可编辑后重连。每次手动连接最多等待约 10 秒，超时会卸载本次客户端。停用 `tools` 核心插件会使连接等待依赖，恢复后由框架重新激活。
 
-新增服务发布的工具可以由真实模型选择调用。离线模式可通过 `/mcp 完整工具名 JSON参数` 调用新服务；`/mcp-add` 和仿真命令仍指向原有 `demo` 服务，不会自动改成新建的服务。多个本机示例实例各自拥有独立的仿真资源账本。
+新增服务发布的工具可以由真实模型选择调用。离线模式可通过 `/mcp 完整工具名 JSON参数` 调用新服务。
 
 ### 聊天输入框的命令补全
 
@@ -198,22 +203,22 @@ YAML 服务可以启停、重新连接和查看工具，参数编辑或删除需
 
 方向键选择，Tab / Enter 或鼠标点击补全；Esc 关闭，Shift + Enter 换行，中文输入法确认不触发补全或发送。选择目录入口会继续展开子项；选择具体条目只修改草稿，下一次发送才进入 Agent。单独提交 `/mcp` 或 `/skill` 只浏览目录，不创建会话或调用模型。参数和描述按纯文本显示，不执行其中的 HTML。
 
-选择技能后回填官方 `/技能名`，由官方插件加载正文；例如在 `/skill` 中选中标书技能后得到 `/tender-writing `。停用、删除、依赖未就绪或 `user-invocable: false` 的技能不会进入列表；`disable-model-invocation: true` 的技能仍可允许用户显式调用。
+选择技能后回填官方 `/技能名`，由官方插件加载正文；例如启用并选中 `explain-simulation` 后得到 `/explain-simulation `。停用、删除、依赖未就绪或 `user-invocable: false` 的技能不会进入列表；`disable-model-invocation: true` 的技能仍可允许用户显式调用。
 
-选择 MCP 工具后回填 `/mcp 完整工具名 `，候选项显示服务名称和真实 JSON Schema 的参数摘要，`*` 表示必填；已写在光标后的 JSON 参数会保留。例：`/mcp mcp__demo__add {"a":2,"b":3}`。真实模式由模型按指令通过官方工具运行时调用，缺少必填信息时先询问用户；离线模式仍使用现有 JSON 命令适配器。两种模式都展示实际工具调用和结果，补全本身不执行工具。
+选择 MCP 工具后回填 `/mcp 完整工具名 `，候选项显示服务名称和真实 JSON Schema 的参数摘要，`*` 表示必填；已写在光标后的 JSON 参数会保留。例：`/mcp mcp__environment__get_environment_config`。真实模式由模型按指令通过官方工具运行时调用，缺少必填信息时先询问用户；离线模式仍使用现有 JSON 命令适配器。两种模式都展示实际工具调用和结果，补全本身不执行工具。
 
-Skill 数据读取 `/api/skills.commands`，MCP 数据读取 `/api/mcp/services` 中已启用、连接运行中的实际工具，去重后展示；断连、停用或移除的工具会退出列表。目录展开期间定期刷新，Skill/MCP 管理变更后立即刷新；两个目录独立读取，一种失败不会隐藏另一种可用能力。`/mcp` 与 `/skill` 是本项目的目录入口，不宣称由 MCP 协议规定。其他 `/mcp-add`、`/simulate`、`/sim-resources`、`/sim-status`、`/sim-cancel` 和 `/bash` 仍是离线测试快捷入口，不加入补全；直接通过 API 发送旧 `/skill 名称` 的离线测试行为保留。
+Skill 数据读取 `/api/skills.commands`，MCP 数据读取 `/api/mcp/services` 中已启用、连接运行中的实际工具，去重后展示；断连、停用或移除的工具会退出列表。目录展开期间定期刷新，Skill/MCP 管理变更后立即刷新；两个目录独立读取，一种失败不会隐藏另一种可用能力。`/mcp` 与 `/skill` 是本项目的目录入口，不宣称由 MCP 协议规定。`/bash` 是离线测试快捷入口，不加入补全；直接通过 API 发送旧 `/skill 名称` 的离线测试行为保留。
 
 ### 在网页管理 Skill
 
 启动 Web 后，打开右侧 **Skill 管理**。运行时复用 `@deepseek-ai/dsh-skill`、`@deepseek-ai/dsh-skill-filesystem` 和 `@deepseek-ai/dsh-tool-skill`；网页 CRUD 与 JSON 存储是本 demo 的适配层。Skill 是告诉 agent“何时使用、按什么步骤处理”的指令；MCP 工具负责实际计算。启用技能不会直接启动仿真任务。
 
-项目 `skills/` 下的 `underwater-simulation` 和 `tender-writing` 都由官方目录实现加载，源文件只读，启停状态单独保存。新配置中水下技能默认停用、标书技能默认启用；已有配置迁移时保留原状态。以水下技能为例：
+可在下方创建一个示例技能，也可以将技能文件放到配置的目录，让官方插件发现。
 
 1. 点击 **查看** 阅读指令和 Markdown 预览；目录源文件保持只读。
 2. 点击 **启用**，模型后续请求会看到技能的名称与使用场景摘要。
-3. 在聊天框输入 `/underwater-simulation`，官方插件会在本轮请求前注入完整指令。可在原始请求和调用过程中查看 `source.kind: skill-invocation`；显式调用不需要先由模型发起工具调用。
-4. 离线适配器只报告实际收到的技能注入，不理解或自动执行正文；手动验证本机仿真仍可使用 demo 命令 `/simulate small`。真实模型可根据官方目录匹配任务，通过 `skill` 工具按需读取，或使用用户已显式加载的指令调用 MCP。
+3. 在聊天框输入 `/explain-simulation`，官方插件会在本轮请求前注入完整指令。可在原始请求和调用过程中查看 `source.kind: skill-invocation`；显式调用不需要先由模型发起工具调用。
+4. 离线适配器只报告实际收到的技能注入，不理解或自动执行正文。真实模型可根据官方目录匹配任务，通过 `skill` 工具按需读取，或使用用户已显式加载的指令调用 MCP。
 
 新建自己的技能时，可以点击 **填入示例**，也可以点击 **导入 SKILL.md** 读取本机 Markdown 文件。导入只载入浏览器草稿，点击 **保存技能** 后才写入本机配置；“保存后启用”默认不勾选。已有网页技能可编辑或删除，目录技能可查看、启停、导出或复制为新技能；网页不会编辑或删除目录源文件。复制只包含 SKILL.md，不复制其脚本和附件。
 
@@ -240,36 +245,18 @@ description: 当用户需要解释通信仿真结果时使用。
 
 随项目提供的目录技能统一放在 `skills/<技能名>/SKILL.md`，新增子目录可自动发现；额外本地技能放在 `.dsh/local-skills/<技能名>/SKILL.md`，也支持该根目录下的 `<技能名>.md`。`DSH_DEMO_SKILL_DIR` 只更改额外根目录。`src/skill-filesystem.ts` 复用官方 `FileSystemSkillProvider` 的发现、解析、监听、缓存失效通知和正文读取，在提供方的 `list/get` 边界额外检查启停状态，保留官方 `resourceBase`，不修改 vendored 源码。配置仍为 `includeDefaultRoots: false`，不扫描用户的 `~/.agents/skills`。
 
-目录技能的启停按官方目录使用的技能名称保存，不因文件路径或插件重启丢失；重命名技能视为新技能。管理配置为版本 2，包含 `skills`（原网页技能）和 `directoryEnabled`（名称到布尔值的映射）。旧版 `builtinEnabled` 自动迁移为 `directoryEnabled["underwater-simulation"]`，原配置保留为同目录的 `skills.json.v1.bak`（自定义配置路径则在原路径后加 `.v1.bak`），已有备份不覆盖。损坏配置不覆盖保存，目录调用保持关闭，修复后重启恢复。
-
-### 标书撰写 Skill
-
-[skills/tender-writing/SKILL.md](skills/tender-writing/SKILL.md) 是随项目提供的完整目录技能，与水下技能采用相同的官方文件目录实现和启停管理，默认可调用。重启 Web 后，在 **Skill 管理** 中可以查看、启用或停用 `tender-writing`；启停状态在重启后保留。在对话框输入 `/tender-writing` 加任务说明即可加载，输入 `/tender` 也可以补全。目录源文件在网页只读，修改源文件即可更新。离线模式只验证指令加载，实际撰写需要接入真实模型。
-
-使用时提供样例文件的服务端可读路径或粘贴大纲，再给出本项目的要求和分系统资料。例如：
-
-```text
-/tender-writing 请以 work/input/样例.docx 的大纲为模板，为本项目撰写技术标书。先提取大纲，再写总体方案，之后逐个写分系统。文字定稿前只放示意图占位符和提示词。
-```
-
-技能依次执行“提取样例大纲 → 总体章节 → 分系统章节 → 文字定稿 → 统一生成并核对图片 → 组装 Word”。每章单独保存进度与待确认项；图位用稳定 ID 与提示词对应。输出的文档可见标题、Word 属性标题和文件名都带实际时间戳，草稿明确标注。可以使用服务端已有路径，也可以点击聊天输入框旁的 **＋ 文件** 上传样例、要求和分系统资料，随后发送消息。
-
-关键资料缺失时，技能会列出“缺少什么、用于哪章、如何补充”，提示直接输入文字或上传文件，并在 `progress.json` 记录 `waiting_for_input` 和继续位置；收到补充后继续已有工作。非关键细节使用待确认标记。已经上传并读取的资料不重复索要；无法读取的文件会明确提示补充可读版本或正文。
-
-[工作文件与组装约定](skills/tender-writing/references/artifacts.md) 说明章节进度、图清单和 `document.json` 的格式。[Word 脚本](skills/tender-writing/scripts/assemble_docx.py) 支持读取 DOCX 样例，或将段落、标题、列表、表格与图片插入 DOCX 模板。它需要 Python 3.10+ 和 [requirements.txt](skills/tender-writing/scripts/requirements.txt) 中的 `python-docx`，不由 `npm install` 安装；独立环境的安装与运行命令见上述约定。
-
-用户模板在副本中保留字号、加粗、页面设置和页眉页脚布局，用单独段落 `{{CONTENT}}` 标记正文插入位置；可选 `{{DOCUMENT_TITLE}}` 和 `{{OUTPUT_TIMESTAMP}}` 标记标题与时间。输出 Word 中的可编辑文字统一为**宋体、黑色**，覆盖标题、正文、表格、图题、页眉页脚和模板保留文字；草稿中的 `【待确认：具体问题】` 使用**黄色文本高亮**，确认后的普通文字不受影响。不传模板时只生成通用 A4 版式。脚本不会生成图片；配图需使用 Agent 当前实际可用的绘图工具，图中文字的宋体、黑色须在绘图时落实，尚未配置时仍可输出带图位和提示词的文字草稿。最终版要求文字已定稿、无待确认标记、全部图位已有审核通过的真实图片。复杂目录、自动编号和逐页排版仍需文档客户端或其他文档工具检查。
+目录技能的启停按官方目录使用的技能名称保存，不因文件路径或插件重启丢失；重命名技能视为新技能。管理配置为版本 2，包含 `skills`（原网页技能）和 `directoryEnabled`（名称到布尔值的映射）。旧版配置迁移时保留网页技能，原配置另存为同目录的 `skills.json.v1.bak`（自定义配置路径则在原路径后加 `.v1.bak`），已有备份不覆盖。损坏配置不覆盖保存，目录调用保持关闭，修复后重启恢复。
 
 ### 上传资料与下载文件
 
 1. 点击输入框旁 **＋ 文件**，或将文件拖入输入区，可选择多个文件。上传完成后显示“待发送”，可以移除或重试失败项；上传成功本身不调用模型。
-2. 输入问题或 `/tender-writing` 后发送，也可以只发送附件。该轮会展示附件下载链接，服务器仅接纳真实上传 ID，通过官方 `file` 内容块加入会话。
-3. 官方 LLM 运行时把文件引用转换成文件名、大小和真实只读路径，Agent 用现有 Bash/文档工具按需读取；不会把二进制伪装成文本。DOCX 可用标书脚本提取，PDF、扫描件及其他格式仍需实际可用的读取/转换工具，上传不等于自动完成解析或 OCR。图片本次作为原始文件保存，不自动进行图片归一化或视觉分析。
-4. 让 Agent 将需要下载的产物保存到 `work/`，例如 `work/tenders/项目简称/output/标书_时间戳.docx`。打开右侧 **文件**，点击名称即可下载；生成结束后自动刷新，面板也支持手动刷新和按路径搜索。原始上传和其他工作文件同样可下载，已上传资料可重新添加为附件。
+2. 输入问题后发送，也可以只发送附件。该轮会展示附件下载链接，服务器仅接纳真实上传 ID，通过官方 `file` 内容块加入会话。
+3. 官方 LLM 运行时把文件引用转换成文件名、大小和真实只读路径，Agent 用现有 Bash/文档工具按需读取；不会把二进制伪装成文本。DOCX、PDF、扫描件及其他格式需要相应的读取或转换工具，上传不等于自动完成解析或 OCR。图片本次作为原始文件保存，不自动进行图片归一化或视觉分析。
+4. 让 Agent 将需要下载的产物保存到 `work/`，例如 `work/output/report.docx`。打开右侧 **文件**，点击名称即可下载；生成结束后自动刷新，面板也支持手动刷新和按路径搜索。原始上传和其他工作文件同样可下载，已上传资料可重新添加为附件。
 
 上传原件存储为 `work/uploads/<随机上传ID>/<文件名>`，同名文件不会覆盖；隐藏的 `.upload.json` 保存哈希和回执，不能从下载接口读取。对话通过已签收回执引用原件，后台校验字节哈希后再接纳附件。原件设置为只读，需要修改时复制到项目工作目录。单文件上限 **20 MiB**，每条消息最多 **10 个附件、合计 100 MiB**；大文件流式写入，超限或取消会清理半成品。从待发送列表移除只取消该消息的引用，不删除已保存文件。重启后文件与上传回执保留，网页对话同时由官方 JSONL 后端持久化；此本机 demo 的多个页面共享工作文件目录。
 
-文件面板只列出工作根目录内的普通文件，忽略隐藏项和符号链接；下载接口校验规范路径，拒绝目录、路径穿越和指向工作区外的链接，始终以附件方式下载。Agent 可返回 `[下载 Word](/api/files/download?path=tenders%2Fdemo%2Foutput%2Freport.docx)` 这样的真实链接；中文与空格需 URL 编码。聊天中的 `work/...` 链接及工作目录内的绝对路径会由前端转换为下载地址。仅在工具确认文件存在后交付，不使用虚构的 `sandbox:` 地址。工作目录过大时面板最多列出 1000 个文件，已知路径的有效下载链接仍可使用。
+文件面板只列出工作根目录内的普通文件，忽略隐藏项和符号链接；下载接口校验规范路径，拒绝目录、路径穿越和指向工作区外的链接，始终以附件方式下载。Agent 可返回 `[下载 Word](/api/files/download?path=output%2Freport.docx)` 这样的真实链接；中文与空格需 URL 编码。聊天中的 `work/...` 链接及工作目录内的绝对路径会由前端转换为下载地址。仅在工具确认文件存在后交付，不使用虚构的 `sandbox:` 地址。工作目录过大时面板最多列出 1000 个文件，已知路径的有效下载链接仍可使用。
 
 ### 执行 Bash 命令
 
@@ -321,7 +308,7 @@ npm run web
 | `DSH_DEMO_SESSION_DIR` | Web 会话历史目录，默认本项目 `.dsh/sessions/`；相对配置值以项目根目录解析。 |
 | `DSH_DEMO_WORK_DIR` | Agent 默认工作目录、Bash 后备目录及 Web 上传下载的共同根目录，默认本项目 `work/`，启动时自动创建；相对配置值以项目根目录解析。 |
 | `--offline` | 选择 `demo-offline` 提供方与 `echo` 模型，禁用真实模型适配器。 |
-| `cordis.patch.yml` 的 `mcp-demo.config` | MCP 服务名称、传输、启动命令、参数和超时；默认启动项目自带的 stdio 服务。 |
+| `cordis.patch.yml` 的五组 `mcp-*` 条目 | 默认五平台 MCP 服务的 stdio 启动配置、HTTP 平台地址和工具超时。 |
 | `cordis.patch.yml` 的 `deepseek-api-key.config` | 模型容量：`defaultContextWindow` / 模型目录 `contextWindow` 为 1048576，`maxTokens` 为 393216；保留非思考模式。 |
 
 `DSH_DEMO_OFFLINE`、`DSH_HOME` 和 `TSX_TSCONFIG_PATH` 由 `scripts/run.mjs` 为子进程设置。切换离线模式请使用 `--offline`；这些内部变量不需要手动准备。
@@ -332,33 +319,17 @@ npm run web
 
 有锁文件时可执行 `npm ci`，它按 `package-lock.json` 重建依赖；`npm install` 适合首次准备或修改依赖。两者都会自动执行 `prepare`，从项目内源码生成类型声明并检查框架类型。修改框架源码后运行 `npm run build`，再运行 `npm run typecheck` 检查教学入口。请保留默认开发依赖安装，因为 TypeScript 构建需要它们。
 
-复制时带上 `src/`、`web/`、`scripts/`、`simulation/`、`skills/`、`vendor/`、两个 YAML、JSON 配置与锁文件即可；不要携带 `.env`、`.dsh/`、`node_modules/` 或生成的 `lib/` 和 `*.tsbuildinfo`。在新目录重新执行 `npm ci`，然后执行 `npm run web -- --offline`。框架来源、裁剪范围和许可证见 [vendor/harness/README.md](vendor/harness/README.md)，每个复制的源码文件见 [FILES.md](vendor/harness/FILES.md)。
+复制时带上 `src/`、`web/`、`scripts/`、`simulation/`、`vendor/`、两个 YAML、JSON 配置与锁文件即可；不要携带 `.env`、`.dsh/`、`node_modules/` 或生成的 `lib/` 和 `*.tsbuildinfo`。在新目录重新执行 `npm ci`，然后执行 `npm run web -- --offline`。框架来源、裁剪范围和许可证见 [vendor/harness/README.md](vendor/harness/README.md)，每个复制的源码文件见 [FILES.md](vendor/harness/FILES.md)。
 
 ### 体验本机 MCP 工具
 
-启动 Web 后，点击“试试 MCP 加法”，或在聊天框输入：
+发送 `/mcp mcp__environment__get_environment_config` 可查询环境配置。Web「调用过程」显示模型请求、工具调用、HTTP 平台结果和后续模型回复。各平台的 MCP 客户端由 `cordis.patch.yml` 加载，通过 stdio 使用同一个适配器脚本和各自的 `--platform` 参数。
 
-```text
-/mcp-add 2 3
-```
-
-离线模式会回复 `（离线 MCP 演示）结果：5`。这条命令是模拟适配器的固定教学规则，计算发生在真正的 MCP 服务进程中；它不意味着离线模型能理解任意自然语言。真实模型模式下可以说“请使用 MCP 工具计算 2 加 3”，由模型根据工具定义决定是否调用。
-
-打开“调用过程”，本次发送会包含：第一次模型请求 → `mcp__demo__add` 工具调用及参数 → MCP 服务返回结果 → 第二次模型请求携带 tool 消息 → 最终回复。“原始输出”可查看 tool-call 分片、schema 和结果进入的完整消息。MCP 此处使用 stdio，模型的 HTTP 原始正文视图不等于 MCP 协议抓包。
-
-“插件”页新增 **MCP 工具与仿真后台** 开关。停用会关闭连接和服务进程、移除模型可见工具，普通聊天仍可用；重新启用会连接并重新发现工具。和其他开关一样，切换会结束当前会话，并且重启后恢复 YAML 配置。
-
-#### 客户端、服务端和模型各做什么
-
-- `cordis.patch.yml` 的 `mcp-demo` 条目加载官方 `@deepseek-ai/dsh-mcp-client`，它是 MCP 客户端：发现工具并桥接到 Agent 的工具运行时。
-- `scripts/mcp-server.mjs` 是 MCP 服务端：官方 SDK 处理协议，`add` 的函数实现执行计算。它由客户端自动启动，无需另开终端；不要向它的 stdout 添加普通日志，以免破坏协议。
-- `src/offline-adapter.ts` 在显式命令下只发出 tool-call、读取结果，不直接计算。真实模型也通过同一种 Agent 工具执行流程使用 MCP。
-
-执行过程是 `Agent → dsh-tools → MCP 客户端 → stdio → MCP 服务 → 结果回到 Agent → 再次请求模型`。MCP 客户端及其必要源码已复制到 `vendor/harness/packages/mcp/`，项目仍可独立运行；npm 安装的是官方通用协议 SDK。
+在「插件」页停用任一平台 MCP 条目会断开对应连接并移除该组工具。重新启用会重新发现工具。切换会结束当前会话，进程重启时按 YAML 重新加载。
 
 #### 改成其他 MCP 服务
 
-每个 MCP 条目对应一个服务。复制 `mcp-demo` 条目时，用不同的 `id` 和 `serverName` 避免工具名冲突。本机程序仍用 `transport: stdio`，把 command、args、cwd 改为服务实际的启动命令。SDK 会直接传递参数，不执行 shell 拼接。`env` 只填写服务需要的显式环境值，凭据应通过环境表达式读取。
+每个 MCP 条目对应一个服务。复制某个平台的 MCP 条目时，用不同的 `id` 和 `serverName` 避免工具名冲突。本机程序仍用 `transport: stdio`，把 command、args、cwd 改为服务实际的启动命令。SDK 会直接传递参数，不执行 shell 拼接。`env` 只填写服务需要的显式环境值，凭据应通过环境表达式读取。
 
 远程服务使用 Streamable HTTP，可把原条目的 config 改成下面这样；同时删除原有的 command、args、cwd、env。这里是替换示意，请把地址换成自己的 MCP 端点：
 
@@ -377,7 +348,7 @@ toolCallTimeoutMs: 10000
 failOnStartupError: true
 ```
 
-当前最小例子只挂载 MCP 工具桥接（包括仿真工具）；MCP 资源发现/读取服务没有单独激活。`serverName` 改变后，离线固定 `/mcp-add` 演示不会自动改为调用新服务；真实模型按实际公布的工具列表选择。网页可管理实际的 MCP 客户端条目，无需为每个新 MCP 服务修改开关允许清单。
+当前最小例子只挂载 MCP 工具桥接（包括仿真工具）；MCP 资源发现/读取服务没有单独激活。`serverName` 改变后，离线命令需要使用新的工具全名。网页可管理实际的 MCP 客户端条目，无需为每个新 MCP 服务修改开关允许清单。
 
 ### 能力来源与边界
 
@@ -401,10 +372,8 @@ failOnStartupError: true
 | Skill 新建、编辑、启停、导入导出、预览与 JSON 保存 | `src/skill-management.ts`、`src/skill-filesystem.ts`、`web/skills.js` | demo 的管理适配层；不是另一套技能加载运行时。旧版管理 JSON 自动迁移到版本 2 并备份。 |
 | 会话落盘、读取与恢复 | 官方 `session-persistence-jsonl`、`session-persistence`、`agents.resume()`；demo `src/session-history.ts`、`web/history.js` | 官方后端保存事件并恢复上下文；demo 提供列表、选择、历史渲染及删除适配。格式迁移依赖仅作为库保留，不额外激活命令或压缩插件。 |
 | 文件上传/下载、原件存储、附件队列与工作文件面板 | `src/web-files.ts`、`web/files.js` | demo 实现官方 `AttachmentStore` 的文件部分；`file` 消息及模型端只读路径投影复用官方 LLM 运行时。不提供图片归一化。 |
-| 水下仿真 MCP 服务、资源查询/申请/释放、任务状态 | `scripts/mcp-server.mjs`、`simulation/` | demo 自己实现的后台，本机资源账本模拟集群配额，不是官方集群调度能力。 |
+| 五平台 MCP 服务 | `simulation/platform-mcp/server.mjs` | stdio 工具将请求转发到五个平台的 HTTP 接口。 |
 | 仿真模板、DAG 依赖、并行执行、串行锁、节点脚本与数值内核 | `simulation/workflow.mjs`、模板和 kernels | demo 自己实现；没有接入官方 workflow、jobs 或真实计算集群；数值模型用于演示。 |
-| 仿真监控页与取消任务 | `src/simulation-monitor.ts`、`web/simulation.js` | demo 界面，通过 MCP 查询同一个仿真后台。 |
-| `/mcp-add`、`/simulate` 等离线快捷入口 | `src/offline-*.ts` | demo 专用规则，不是通用 Agent/MCP 命令，不进入补全。旧 `/skill 名称` 仅用于离线验证官方工具路径。 |
 
 当前没有激活官方完整 Web/桌面应用、子 Agent、浏览器/搜索、持久 Shell/通用后台 jobs、通用文件工具、长程目标、通用工作流、持久化会话等扩展能力。今后需要这些能力时应接入对应官方插件，配合必要的业务适配层。
 
@@ -422,7 +391,6 @@ dsh-demo/
 ├── web/                             浏览器执行的 HTML、CSS、JavaScript
 ├── scripts/                         启动包装、MCP 服务和验证脚本
 ├── simulation/                      仿真模板、资源账本与数值计算
-├── skills/                          随项目提供的标准 SKILL.md 示例
 ├── vendor/harness/                  项目内部的必要框架源码与授权
 └── .dsh/                            profile、MCP/技能配置和诊断数据
 ```
@@ -469,29 +437,19 @@ dsh-demo/
 | [scripts/smoke.mjs](scripts/smoke.mjs) | Node | 启动真实终端进程，验证核心组合、多轮历史、参数和退出行为。 |
 | [scripts/web-smoke.mjs](scripts/web-smoke.mjs) | Node | 启动真实 HTTP 服务，验证页面资源、SSE、历史隔离、输入检查和错误恢复。 |
 | [scripts/debug-smoke.mjs](scripts/debug-smoke.mjs) | Node | 逐项验证核心启停，并用本机 Messages 协议夹具检查原始字节、思考/用量、取消及恢复。 |
-| [scripts/mcp-server.mjs](scripts/mcp-server.mjs) | MCP SDK 启动，独立 Node 进程执行 | 提供 add 和模板化仿真工具，通过 stdin/stdout 完成真实协议调用；关闭前取消活动计算。 |
-| [scripts/mcp-smoke.mjs](scripts/mcp-smoke.mjs) | Node | 验证工具发现、两次模型请求、真实工具结果、多轮计算、错误传播、停用后注销及重新启用。 |
+| [simulation/platform-mcp/server.mjs](simulation/platform-mcp/server.mjs) | MCP SDK 启动，独立 Node 进程执行 | 提供五平台工具，通过 stdin/stdout 处理 MCP 并转发 HTTP。 |
+| [scripts/platform-mcp-smoke.mjs](scripts/platform-mcp-smoke.mjs) | Node | 验证工具发现、两次模型请求、真实工具结果、多轮计算、错误传播、停用后注销及重新启用。 |
 | [scripts/mcp-management-smoke.mjs](scripts/mcp-management-smoke.mjs) | Node | 隔离验证 stdio/HTTP 注册、工具目录、进程退出、凭据保留、并发保护、配置恢复和删除。 |
 | [scripts/bash-smoke.mjs](scripts/bash-smoke.mjs) | Node | 通过真实 Agent 验证官方 Bash 执行、会话环境、全新 shell、错误输出、超时/输出溢出、取消与依赖恢复。 |
 | [scripts/sessions-smoke.mjs](scripts/sessions-smoke.mjs) | Node | 验证官方落盘与恢复、排他写锁、历史删除与重启不复活、活动命令清理及原件保留。 |
 | [scripts/files-smoke.mjs](scripts/files-smoke.mjs) | Node | 验证原样文件传输、官方附件消息、实际工具读取、产物下载、重启恢复、超限和取消清理、下载范围。 |
 | [scripts/skills-smoke.mjs](scripts/skills-smoke.mjs) | Node | 通过真实 Agent 验证技能摘要、工具加载、CRUD、格式检查、依赖恢复、删除和重启恢复。 |
-| [skills/underwater-simulation/SKILL.md](skills/underwater-simulation/SKILL.md) | 官方目录技能提供方、模型按需读取 | 水下仿真目录技能，规定资源查询、模板调用、状态检查及结果解释，新配置默认停用，网页可启停。 |
-| [skills/tender-writing/SKILL.md](skills/tender-writing/SKILL.md) | 官方目录技能提供方、模型按需读取或 `/tender-writing` 注入 | 标书写作流程：继承样例大纲，先总体后分系统，先文字后配图，按模板交付带时间戳的 Word。 |
-| [skills/tender-writing/references/artifacts.md](skills/tender-writing/references/artifacts.md) | 执行标书技能时按需读取 | 章节进度、图清单、Word 模板标记、组装 JSON 格式及脚本用法。 |
-| [skills/tender-writing/scripts/assemble_docx.py](skills/tender-writing/scripts/assemble_docx.py) | Agent 通过 Bash 调用独立 Python 环境 | 提取 DOCX 内容，校验草稿/终稿条件，按模板插入图文，统一宋体黑字并高亮待确认项，生成带实际时间戳的新文件。 |
-| [skills/tender-writing/scripts/test_assemble_docx.py](skills/tender-writing/scripts/test_assemble_docx.py) | 开发者使用同一独立 Python 环境运行 | 在临时目录验证 Word 字体、颜色、待确认高亮、模板保留和终稿拦截，不改动用户文件。 |
-| [skills/tender-writing/scripts/requirements.txt](skills/tender-writing/scripts/requirements.txt) | Python 依赖安装工具 | Word 组装脚本的依赖；与 npm 和插件运行时分开安装。 |
 | `.dsh/sessions/` | 官方 JSONL 后端 | Web 会话事件日志及跨进程写锁；重启后可读和恢复，具体文件名由官方格式版本决定。 |
 | `.dsh/skills.json` | 技能管理器 | 运行时生成的网页技能和启用状态，重启恢复；不作为静态资源公开。 |
 | `.dsh/mcp-services.json` | Web 管理器 | 运行时生成的网页服务配置与启停状态，可能包含凭据，不应提交到版本库。 |
-| [simulation/](simulation/README.md) | MCP 后台与 Node 子进程 | 资源账本、流程模板、DAG 调度、串行锁、数值内核、实例化节点脚本与结果持久化；各文件详见目录 README。 |
-| [src/offline-simulation.ts](src/offline-simulation.ts) | 离线适配器 | 把 /simulate 等固定演示命令转换为真实 MCP 调用，并持续读取状态。 |
-| [src/simulation-monitor.ts](src/simulation-monitor.ts) | Web 路由 | 通过 MCP 查询资源与任务，并处理显式取消；不复制调度逻辑。 |
-| [web/simulation.js](web/simulation.js) | 浏览器 | 仿真任务面板、一秒刷新、阶段节点展示、取消与 JSON 下载。 |
-| [scripts/simulation-workflow.mjs](scripts/simulation-workflow.mjs) | Node | 无 Agent 的模板脚本入口，复用与 MCP 相同的资源/调度流程。 |
+| [simulation/](simulation/README.md) | 模板脚本与 Node 子进程 | 资源账本、流程模板、DAG 调度、串行锁、数值内核、实例化节点脚本与结果持久化；各文件详见目录 README。 |
+| [scripts/simulation-workflow.mjs](scripts/simulation-workflow.mjs) | Node | 无 Agent 的模板脚本入口，执行模板的资源申请与调度流程。 |
 | [scripts/simulation-node.mjs](scripts/simulation-node.mjs) | 计算子进程 | 从 JSON stdin 执行受信数值任务，输出 JSON Lines 进度和结果。 |
-| [scripts/simulation-smoke.mjs](scripts/simulation-smoke.mjs) | Node | 真实 MCP 协议及 Agent/Web 集成验证。 |
 | [scripts/standalone-smoke.mjs](scripts/standalone-smoke.mjs) | Node、npm | 复制源码到全新临时目录，重新安装与构建，并执行类型检查及全部功能 smoke 和仿真约束测试，检查内部包没有链接到外部仓库。 |
 | [vendor/harness/](vendor/harness/README.md) | npm、tsx、TypeScript | 随项目保存的必要框架源码、包清单、构建配置和授权；详细文件索引见其 FILES.md。 |
 
@@ -509,7 +467,7 @@ dsh-demo/
 | `dsh-session` | 内存会话与事件记录 | 保存用户、助手和轮次历史。 |
 | `dsh-session-projection` | 从事件派生当前状态 | AgentLoop 依赖它维护收件箱等状态。 |
 | `dsh-system-prompt` | 系统提示词和工具定义组装 | 为每次模型请求组织角色说明与能力描述。 |
-| `dsh-tools` | 工具注册和执行运行时 | AgentLoop 的必需依赖；本例通过附加 MCP 客户端注册 add 工具。 |
+| `dsh-tools` | 工具注册和执行运行时 | AgentLoop 的必需依赖；本例通过 MCP 客户端注册五平台工具。 |
 | `dsh-agent` | `ctx.agents`、Agent 注册表与创建接口 | 让入口通过公开接口管理 Agent。 |
 | `dsh-agent-loop` | Agent 实际工厂与轮次驱动 | 接纳消息、调用模型、记录回复，必要时执行工具。 |
 
@@ -540,7 +498,7 @@ npm run demo -- --offline
 
 `import` 会装载模块并执行其顶层语句，但定义 `function apply(...)` 不等于执行它。真正调用 `apply` 的是 Cordis。`apply` 中注册的回调又要等 `appReady`，不能把这些不同时间点当成“一加载就执行完全部聊天”。
 
-上图按职责展示流程；插件加载会按依赖推进，不表示所有插件的 `apply` 都严格串行执行。正常就绪时，MCP 的首次连接与工具发现已经完成，所以第一轮模型请求就能看到 `mcp__demo__add`。
+上图按职责展示流程；插件加载会按依赖推进，不表示所有插件的 `apply` 都严格串行执行。正常就绪时，MCP 的首次连接与工具发现已经完成，所以第一轮模型请求就能看到 `mcp__environment__get_environment_config`。
 
 `scripts/run.mjs` 用 `spawn` 启动另一个 Node 进程。`cwd: demoRoot` 将服务进程目录固定为项目根目录；Agent 的默认工作目录另由 `working-directory.config.defaultDirectory` 指向 `work/`。`stdio: 'inherit'` 决定键盘与日志如何穿过包装脚本。`--import tsx/esm` 负责执行 TS 源码；`npm run typecheck` 才是专门的类型检查，两者是独立操作。
 
@@ -576,10 +534,6 @@ npm run web -- --offline
 | `GET /api/files` | 无正文 | 工作文件列表、上传回执、工作根目录与大小限制。 |
 | `POST /api/files/upload` | 原始二进制，`Content-Type: application/octet-stream`，`X-File-Name` 为 URL 编码名称 | `201` 与上传 ID、文件相对路径、字节数和下载链接；不自动发送消息。 |
 | `GET /api/files/download?path=...` | URL 编码的相对工作目录路径 | 原始文件下载，支持中文文件名；拒绝工作区外路径和目录。 |
-| `GET /api/simulation-resources` | 无正文 | 经 MCP 查询演示资源账本和本机观测。 |
-| `GET /api/simulations` | 无正文 | 所有后台仿真任务的摘要。 |
-| `GET /api/simulations/:id` | 无正文 | 节点进度、完整事件、资源租约和数值结果。 |
-| `POST /api/simulation-cancel/:id` | JSON 空对象 | 经 MCP 取消任务，等待子进程退出和资源回收。 |
 | `GET /api/plugins` | 无正文 | 实际插件条目、`parentId` 父节点、`container` 容器标志、状态、修改版本及模型可用性。 |
 | `POST /api/plugins/toggle` | `{ "id": "完整 Loader ID", "enabled": false }` | 启停已有插件，结束旧会话并等待依赖稳定；只在当前进程有效。 |
 | `GET /api/runs` | 无正文 | 所有网页轮次的摘要，包括进行中、完成、失败与取消。 |
@@ -592,7 +546,7 @@ npm run web -- --offline
 
 历史会话列表位于页面左侧栏，**默认展开**，刷新页面后也会展开。可按首条消息搜索并选择；手动收起后，点击页头 **历史** 按钮重新展开。选择会话后侧栏保持展开，只有点击侧栏内的“收起”按钮才会关闭。页头“历史”按钮只负责展开，Esc 和点击遮罩不会关闭侧栏；窄屏下仍以遮罩抽屉展示。打开只回放记录，发送新消息才恢复 Agent；点击 **新对话** 会保留旧记录。同一标签页刷新自动读取上次选择的会话，其他标签页可从列表选择。多个标签页打开同一会话时共用其后台 Agent，同一时间只允许一条消息生成。
 
-每条历史会话右侧有 **删除** 按钮，确认后永久删除该会话的全部日志版本；当前会话正在生成时会先取消并等待 Agent/前台工具退出，再删除记录。删除当前会话会回到新对话，同源标签页通过删除通知同步退出该会话；侧栏保持展开。删除其他会话不会清空当前对话。删除失败会保留列表项并显示错误，可重试。原始上传、工作目录文件和独立后台仿真任务不随会话删除；仿真取消仍通过仿真任务面板操作。
+每条历史会话右侧有 **删除** 按钮，确认后永久删除该会话的全部日志版本；当前会话正在生成时会先取消并等待 Agent/前台工具退出，再删除记录。删除当前会话会回到新对话，同源标签页通过删除通知同步退出该会话；侧栏保持展开。删除其他会话不会清空当前对话。删除失败会保留列表项并显示错误，可重试。原始上传、工作目录文件和独立后台仿真任务不随会话删除。
 
 官方 `session-persistence` 未提供删除方法，demo 在 `src/session-history.ts` 增加适配：复用官方 `open(id, 'write')` 的进程内/跨进程写锁与目录命名，仅移除配置根目录下的标准日志文件，保留 `session.lock` 和空目录，避免破坏文件锁。其他服务仍占用会话时返回 `409`；“新对话”与离页清理依旧只关闭 Agent，不永久删除历史。
 
@@ -616,7 +570,7 @@ Web 历史默认保存在 `.dsh/sessions/<项目目录标识>/<会话UUID>/sessi
 
 `options.signal?.throwIfAborted()` 在开始及每次输出前检查取消。`for...of` 按 Unicode 码点遍历字符串；JavaScript 的 `.length` 则统计 UTF-16 码元，这两者遇到某些 emoji 时并不相同。
 
-MCP 演示分支先查看当前用户消息之后有没有 tool 结果：有则输出真实结果；没有则检查数字和模型可见工具名，生成唯一 ToolCallId，并依次产出工具块与 `finish: tool-calls`。AgentLoop 执行 MCP 后再次调用 stream，这时才进入结果分支。检查当前轮次范围能防止连续计算错误复用旧结果。普通消息继续走原来的历史回显。
+`/mcp` 分支读取当前轮次的命令，校验工具名和 JSON 参数，再发出工具调用。AgentLoop 执行工具并将结果传回同一轮。普通消息按历史回显。
 
 ### `src/plugin.ts`：终端入口与资源所有权
 
@@ -719,17 +673,9 @@ YAML 中 `id` 是 patch 定位用的稳定条目 ID，`name` 是模块路径，`
 
 `code ?? fallback` 保留成功状态码 0。若误写成 `code || fallback`，0 会因为是假值被替换，导致成功被误报失败。这是这个短表达式里最需要理解的语义。
 
-### `scripts/mcp-server.mjs`：独立的工具服务进程
+### 五平台 MCP 服务与集成测试
 
-这个文件使用 JavaScript 的 `.mjs` 格式，直接由 Node 执行。`McpServer` 定义服务，`registerTool('add', ...)` 声明工具，`serveStdio(createServer)` 交给官方 SDK 处理协议。工具发现时，客户端会获得 `description` 和由 Zod 参数定义生成的 JSON Schema；模型据此知道工具的用途和入参。
-
-`z.object({ a: z.number().finite(), b: z.number().finite() })` 要求两个参数都是有限数字。工具回调中的 `a + b` 才是真正执行计算的位置。结果用 `content: [{ type: 'text', text: ... }]` 返回；如果加法溢出，则设置 `isError: true`，让错误沿 MCP、工具运行时和 Agent 的路径回到模型。示例使用 JavaScript 的浮点数字计算，没有提供任意精度十进制运算。
-
-MCP 客户端管理服务进程的连接与关闭。网页停用 `mcp-demo` 时，会断开连接、停止子进程并注销工具；重新启用时创建新连接。因此这里不需要另写一个长期后台服务。stdout 专门传 MCP 协议数据，普通诊断请用 stderr，例如 `console.error(...)`。
-
-### `scripts/mcp-smoke.mjs` 与 `scripts/standalone-smoke.mjs`：验证真实组合
-
-MCP 专项测试启动与用户相同的 Web 入口，提交 `/mcp-add` 后检查两次模型请求、工具 schema、工具调用事件和真实 tool 结果；还检查通用 `/mcp` 的 JSON 对象、无参数工具、未知名称、字段错误、连续计算，以及停用后移除工具、恢复后重新调用。它没有在测试中用一个本地加法函数代替 MCP。
+`simulation/platform-mcp/server.mjs` 使用官方 SDK 注册工具并转发 HTTP 请求。运行 `npm run mcp:smoke` 可验证工具发现、实际 HTTP 调用、错误返回及插件启停。
 
 独立性测试会复制源码到新临时目录，排除原来的依赖、运行数据、声明和编译缓存，再执行 `npm ci`、类型检查和全部功能 smoke 和仿真约束测试。它逐个核对 workspace 链接的真实目标是否位于副本内部，并在结束后删除自己创建的临时目录。这个验证不依赖真实模型 API Key。
 
@@ -794,14 +740,14 @@ data: {}
 
 ## 8. 验证脚本为什么存在
 
-仿真相关的 `npm run simulation:test` 检查资源边界、真实串并行、取消/失败和脚本生成；`npm run simulation:smoke` 经过 MCP、Agent 和 Web 验证实时状态与结果，详见 [仿真验证说明](simulation/README.md#8-验证)。
+仿真相关的 `npm run simulation:test` 检查资源边界、真实串并行、取消/失败和脚本生成，详见 [仿真验证说明](simulation/README.md#8-验证)。
 
 | 文件 | 主要验证 | 不宣称验证的内容 |
 | --- | --- | --- |
 | `scripts/smoke.mjs` | 实际插件树、两轮历史、空行、EOF、/exit、未知参数、缺密钥失败、SIGINT。 | 真实模型问答效果。 |
 | `scripts/web-smoke.mjs` | 实际 HTTP 静态资源、SSE 事件、多轮历史、会话隔离、输入/来源检查、删除及错误后可继续请求。 | 完整浏览器布局或真实外部 API 回复。 |
 | `scripts/standalone-smoke.mjs` | 无相邻仓库的全新目录安装、框架构建、类型检查及下面各项功能验证；内部链接真实路径检查。 | 其他平台和未复制的官方插件。 |
-| `scripts/mcp-smoke.mjs` | MCP 工具发现、stdio 真实执行、多轮结果、工具错误、停用/恢复及模型可见 schema。 | 任意外部 MCP 服务的可用性。 |
+| `scripts/platform-mcp-smoke.mjs` | 五平台工具发现、stdio 与 HTTP 映射、工具错误、停用与恢复。 | 任意外部 MCP 服务的可用性。 |
 | `scripts/mcp-management-smoke.mjs` | stdio/HTTP 注册、工具可见性、子进程退出、凭据隐藏和保留、并发互斥、重启恢复、删除和 YAML 不被改写。 | 外部服务的可用性和用户自行配置的启动命令。 |
 | `scripts/bash-smoke.mjs` | 官方 Bash 实际执行、退出码、环境、超时、输出溢出、长命令取消、启停及恢复。 | 任意系统命令的可用性、通用后台 jobs 或文件沙箱。 |
 | `scripts/sessions-smoke.mjs` | 保存与恢复、关闭保留、永久删除与重启不复活、跨进程写锁、活动命令清理和原件保留。 | 浏览器布局和外部模型回复质量。 |
@@ -891,7 +837,7 @@ npm run config:web -- --offline
     // 复制到独立临时目录重新安装，检查构建与全部功能。
     "standalone:smoke": "node scripts/standalone-smoke.mjs",
     // 经过真实 AgentLoop 与本机 stdio 服务验证工具调用、错误和启停恢复。
-    "mcp:smoke": "node scripts/mcp-smoke.mjs",
+    "mcp:smoke": "npm run platform:mcp:smoke",
     // 验证网页 MCP 服务注册、管理和重启恢复。
     "mcp:management:smoke": "node scripts/mcp-management-smoke.mjs",
     // 验证指令型技能管理、按需加载和重启恢复。
@@ -901,7 +847,6 @@ npm run config:web -- --offline
     // 真子进程验证 DAG、串行锁、资源边界、故障和回收。
     "simulation:test": "node --test simulation/workflow.spec.mjs",
     // 经官方 MCP 协议和真实 Agent/Web 验证任务交互。
-    "simulation:smoke": "node scripts/simulation-smoke.mjs",
     // 验证官方 Bash 执行、输出、超时、取消与依赖恢复。
     "bash:smoke": "node scripts/bash-smoke.mjs",
     "files:smoke": "node scripts/files-smoke.mjs",
@@ -1051,7 +996,6 @@ ctx.effect(() => () => input.close(), 'terminal-chat-input')
 | 默认端口无法监听或提示地址占用 | 使用 `npm run web -- --offline --port 3081`，或用 `--port 0` 后访问日志给出的地址。 |
 | 网页提示从启动日志中的地址访问 | 使用相同的协议、主机和端口，例如 `http://127.0.0.1:3080`；不要把 `localhost` 和 `127.0.0.1` 混用。 |
 | 发送按钮提示依赖未就绪 | 在插件面板检查七个核心服务和当前模式的模型适配器；恢复被停用的条目并等待依赖激活。MCP 单独停用不会阻止普通聊天。 |
-| `/mcp-add 2 3` 提示工具尚未就绪 | 检查 MCP 工具与仿真后台是否运行中，并查看启动诊断。默认工具名应为 `mcp__demo__add`；改过 serverName 或工具名称后，离线固定命令不会自动适配。 |
 | 离线模式没有 HTTP 原文或思考文本 | 模拟模型没有外部 HTTP 响应，也没有 reasoning 分片；可查看完整模型分片、请求和 MCP 工具调用记录。 |
 | 启停插件后无法发送 | 插件切换会保存并释放当前 Agent，历史记录保留；依赖恢复后继续发送会从原会话恢复，也可通过“历史会话”重新打开。 |
 | 改了 YAML、页面或工具实现，界面没有变化 | 停止服务后重新启动；此 demo 没有为教学入口配置自动热更新。页面资源在插件启动时读取。 |

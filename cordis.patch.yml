@@ -91,27 +91,76 @@
             contextWindow: 1048576
             maxTokens: 393216
 
-    # MCP 是附加能力：连接本机服务，把远端工具注册到同一个 ctx.tools。
-    - id: mcp-demo
-      # 使用已复制到本项目的官方 MCP 客户端；无需相邻仓库。
+    # 每个平台使用独立 MCP 连接，按组启停并共享同一 HTTP 适配器实现。
+    - id: mcp-environment
       name: '@deepseek-ai/dsh-mcp-client'
-      # 每个 MCP 条目连接一个服务；可以复制此条目并使用不同 serverName。
       config:
-        # 模型看到的工具名为 mcp__demo__add，避免多个服务的 add 重名。
-        serverName: demo
-        # stdio 表示由 SDK 启动服务子进程，以标准输入输出传输协议。
+        serverName: environment
         transport: stdio
-        # 使用当前 Node 的绝对路径，避免 PATH 中找不到 node。
         command: !!js process.execPath
-        # cwd 由启动脚本固定为 demo 根目录，因此这里的服务脚本可以随项目一起移动。
-        args: ['scripts/mcp-server.mjs']
-        # 只在本项目根目录启动示例服务，不读取相邻仓库。
+        args: ['simulation/platform-mcp/server.mjs', '--platform', 'P1']
         cwd: !!js process.cwd()
-        # 显式额外环境为空；SDK 从经过凭据清理的父进程环境启动服务。
-        env: {}
-        # 单次工具请求超过十秒即失败，避免对话无限等待。
+        env:
+          DSH_PLATFORM_BASE_URL: !!js process.env.DSH_PLATFORM_BASE_URL ?? ''
+          DSH_PLATFORM_P1_BASE_URL: !!js process.env.DSH_PLATFORM_P1_BASE_URL ?? ''
+          DSH_DEMO_WORK_DIR: !!js process.env.DSH_DEMO_WORK_DIR ?? 'work'
         toolCallTimeoutMs: 10000
-        # 本机示例应成功连接；连接失败会在插件状态和启动日志中明确显示。
+        failOnStartupError: true
+
+    - id: mcp-acoustic-field
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: acoustic_field
+        transport: stdio
+        command: !!js process.execPath
+        args: ['simulation/platform-mcp/server.mjs', '--platform', 'P2']
+        cwd: !!js process.cwd()
+        env:
+          DSH_PLATFORM_BASE_URL: !!js process.env.DSH_PLATFORM_BASE_URL ?? ''
+          DSH_PLATFORM_P2_BASE_URL: !!js process.env.DSH_PLATFORM_P2_BASE_URL ?? ''
+        toolCallTimeoutMs: 10000
+        failOnStartupError: true
+
+    - id: mcp-signal-processing
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: signal_processing
+        transport: stdio
+        command: !!js process.execPath
+        args: ['simulation/platform-mcp/server.mjs', '--platform', 'P3']
+        cwd: !!js process.cwd()
+        env:
+          DSH_PLATFORM_BASE_URL: !!js process.env.DSH_PLATFORM_BASE_URL ?? ''
+          DSH_PLATFORM_P3_BASE_URL: !!js process.env.DSH_PLATFORM_P3_BASE_URL ?? ''
+        toolCallTimeoutMs: 10000
+        failOnStartupError: true
+
+    - id: mcp-replay
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: replay
+        transport: stdio
+        command: !!js process.execPath
+        args: ['simulation/platform-mcp/server.mjs', '--platform', 'P4']
+        cwd: !!js process.cwd()
+        env:
+          DSH_PLATFORM_BASE_URL: !!js process.env.DSH_PLATFORM_BASE_URL ?? ''
+          DSH_PLATFORM_P4_BASE_URL: !!js process.env.DSH_PLATFORM_P4_BASE_URL ?? ''
+        toolCallTimeoutMs: 10000
+        failOnStartupError: true
+
+    - id: mcp-evaluation
+      name: '@deepseek-ai/dsh-mcp-client'
+      config:
+        serverName: evaluation
+        transport: stdio
+        command: !!js process.execPath
+        args: ['simulation/platform-mcp/server.mjs', '--platform', 'P5']
+        cwd: !!js process.cwd()
+        env:
+          DSH_PLATFORM_BASE_URL: !!js process.env.DSH_PLATFORM_BASE_URL ?? ''
+          DSH_PLATFORM_P5_BASE_URL: !!js process.env.DSH_PLATFORM_P5_BASE_URL ?? ''
+        toolCallTimeoutMs: 10000
         failOnStartupError: true
 
     # 两个入口共用官方工作目录与本地 Bash 能力；不额外注册模型文件读写工具。

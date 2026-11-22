@@ -14,7 +14,7 @@ const configFile = join(directory, 'services.json'), pidFile = join(directory, '
 const yamlBefore = await readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8')
 // 包装器只额外记录 PID，真实工具和协议仍来自项目内置的 MCP 服务。
 const wrapper = join(directory, 'server.mjs')
-await writeFile(wrapper, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(pidFile)}, String(process.pid));\nawait import(${JSON.stringify(new URL('./mcp-server.mjs', import.meta.url).href)});\n`)
+await writeFile(wrapper, `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(pidFile)}, String(process.pid));\nconst { serveStdio } = await import(${JSON.stringify(import.meta.resolve('@modelcontextprotocol/server/stdio'))});\nconst { createPlatformMcp } = await import(${JSON.stringify(new URL('../simulation/platform-mcp/server.mjs', import.meta.url).href)});\nserveStdio(createPlatformMcp);\n`)
 const stdio = { serverName: 'managed-local', transport: 'stdio', command: process.execPath, args: [wrapper], cwd: root, env: { DEMO_SECRET: 'private-local-value' }, enabled: true, toolCallTimeoutMs: 10000 }
 
 async function start() {
@@ -63,12 +63,12 @@ let app
 try {
   app = await start()
   const original = (await api(app)).value
-  const builtin = original.services.find(service => service.config.serverName === 'demo')
+  const builtin = original.services.find(service => service.config.serverName === 'environment')
   assert.equal(builtin.source, 'yaml')
-  assert.equal(builtin.tools.length, 14)
+  assert.equal(builtin.tools.length, 9)
   assert.equal((await api(app, '/api/mcp/delete', { id: builtin.id })).status, 403)
-  assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, serverName: 'demo' } })).status, 409)
-  assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, serverName: 'demo__overlap' } })).status, 409)
+  assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, serverName: 'environment' } })).status, 409)
+  assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, serverName: 'environment__overlap' } })).status, 409)
   assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, args: 'bad' } })).status, 400)
   assert.equal((await api(app, '/api/mcp/save', { config: { ...stdio, env: { __jsExpr: 'throw new Error()' } } })).status, 400)
   assert.equal((await api(app, '/api/mcp/save', { config: { serverName: 'bad-url', transport: 'streamable-http', url: 'file:///tmp/a' } })).status, 400)
@@ -78,7 +78,7 @@ try {
   assert.equal(saved.status, 200, JSON.stringify(saved.value))
   const local = saved.value.services.find(service => service.config.serverName === stdio.serverName)
   assert.equal(local.phase, 'active', JSON.stringify(local))
-  assert.equal(local.tools.length, 14)
+  assert.equal(local.tools.length, 24)
   assert.equal(local.config.env, undefined)
   assert.deepEqual(local.config.envKeys, ['DEMO_SECRET'])
   assert.ok(!JSON.stringify(saved.value).includes('private-local-value'))
@@ -157,7 +157,7 @@ try {
   assert.equal(pending.tools.length, 0)
   assert.equal(pending.phase, 'pending')
   await api(app, '/api/plugins/toggle', { id: toolsId, enabled: true })
-  assert.equal((await api(app)).value.services.find(service => service.id === local.id).tools.length, 14)
+  assert.equal((await api(app)).value.services.find(service => service.id === local.id).tools.length, 24)
 
   // 工具变化后的新会话确实拿到新增的 schema。
   const session = (await api(app, '/api/sessions', {})).value.sessionId
@@ -175,7 +175,7 @@ try {
   assert.equal(exists(runningPid), false)
   app = await start()
   const restored = await until(async () => (await api(app)).value, value => !value.changing && value.services.filter(service => service.source === 'web').every(service => service.phase === 'active'))
-  assert.equal(restored.services.find(service => service.id === local.id).tools.length, 14)
+  assert.equal(restored.services.find(service => service.id === local.id).tools.length, 24)
   assert.equal(restored.services.find(service => service.id === remote.id).tools.length, 1)
   // 删除配置同时注销工具、移除树节点和回收子进程，重启后也不再恢复。
   const restoredPid = Number(await readFile(pidFile, 'utf8'))
@@ -183,7 +183,7 @@ try {
   await until(async () => exists(restoredPid), value => !value)
   assert.equal(exists(restoredPid), false)
   await api(app, '/api/mcp/delete', { id: remote.id })
-  assert.equal((await api(app)).value.services.length, 1)
+  assert.equal((await api(app)).value.services.length, 5)
   assert.deepEqual(JSON.parse(await readFile(configFile, 'utf8')).services, [])
   assert.equal(await readFile(new URL('../cordis.patch.yml', import.meta.url), 'utf8'), yamlBefore)
   console.log('重启恢复、配置权限、删除清理和 YAML 保持原样通过。')

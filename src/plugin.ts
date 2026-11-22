@@ -46,7 +46,7 @@ export function apply(ctx: Context, config: Config): void {
   if (config.offline) {
     // 直接注册适配器，不需要 testkit 或额外的核心服务。
     // 创建模拟适配器并绑定到指定 provider；注册随插件生命周期撤销，后续模型请求会按此路由调用它。
-    ctx.llm.registerAdapter([config.provider], new OfflineAdapter())
+    ctx.llm.registerAdapter([config.provider], new OfflineAdapter({ showPlatformResults: true }))
   // 闭合当前花括号结构；与上方对应的 { 配对，结束该函数、条件块或类型声明。
   }
 

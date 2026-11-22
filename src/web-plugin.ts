@@ -28,7 +28,6 @@ import { Debugger } from './debugger.ts'
 // 控制器操作已有 Loader 条目，不安装包或修改源码。
 import { PluginControl, ControlError } from './plugin-control.ts'
 // 监控接口通过同一个 MCP 后台查询，不另建调度逻辑。
-import { installSimulationMonitor } from './simulation-monitor.ts'
 // MCP 注册与持久化只在 Web 入口启用，不改变终端最小组合。
 import { McpManagement } from './mcp-management.ts'
 // 网页 CRUD 与目录启停由管理器持久化，运行时加载工具仍使用官方插件。
@@ -194,8 +193,6 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     readFile(new URL('../web/style.css', import.meta.url)),
     // 调试面板脚本与聊天脚本分开，避免把模型协议展示逻辑混入输入处理。
     readFile(new URL('../web/debugger.js', import.meta.url)),
-    // 仿真任务监控与原有调试代码分开维护。
-    readFile(new URL('../web/simulation.js', import.meta.url)),
     // require 条件解析到独立 UMD 浏览器包，提供 window.markdownit。
     readFile(createRequire(import.meta.url).resolve('markdown-it/browser')),
     // 本项目的 Markdown 配置负责关闭原始 HTML，并设置链接和表格行为。
@@ -304,9 +301,6 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   // 闭合当前花括号结构；与上方对应的 { 配对，结束该函数、条件块或类型声明。
   }
 
-  // 注册仿真监控接口；沿用上方的统一路由保护。
-  installSimulationMonitor(ctx, route)
-
   // 列出明确公开的前端资源；这不是任意磁盘目录服务器。
   const staticFiles = [
     // 根路径发送聊天页 HTML，charset 指定按 UTF-8 解码中文。
@@ -317,8 +311,6 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     ['/style.css', 'text/css; charset=utf-8'],
     // 单独提供原始输出、调用时间线和插件控制脚本。
     ['/debugger.js', 'text/javascript; charset=utf-8'],
-    // 只读任务状态面板与显式取消操作。
-    ['/simulation.js', 'text/javascript; charset=utf-8'],
     // 仅公开这一份依赖构建文件，不公开整个 node_modules 目录。
     ['/markdown-it.js', 'text/javascript; charset=utf-8'],
     // 渲染包装器必须在聊天入口之前执行。

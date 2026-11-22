@@ -7,7 +7,7 @@ import type { Entry } from '@deepseek-ai/cordis-plugin-loader'
 import { PluginDependencies } from './plugin-dependencies.ts'
 
 // 明确列出此学习示例允许切换的条目，避免外部输入操作启动器或任意模块。
-const SWITCHABLE = new Set(['llm', 'session', 'session-projection', 'system-prompt', 'tools', 'agent', 'agent-loop', 'deepseek-api-key', 'offline-provider', 'mcp-demo', 'fs-local', 'working-directory', 'skill', 'skill-filesystem', 'tool-skill', 'subprocess-local', 'bash-local', 'shell-env', 'tool-bash'])
+const SWITCHABLE = new Set(['llm', 'session', 'session-projection', 'system-prompt', 'tools', 'agent', 'agent-loop', 'deepseek-api-key', 'offline-provider', 'mcp-environment', 'mcp-acoustic-field', 'mcp-signal-processing', 'mcp-replay', 'mcp-evaluation', 'fs-local', 'working-directory', 'skill', 'skill-filesystem', 'tool-skill', 'subprocess-local', 'bash-local', 'shell-env', 'tool-bash'])
 // 状态值与 Cordis 的公开 FiberState 顺序一致；不依赖 const enum 的运行时导出。
 const PHASES = ['pending', 'loading', 'active', 'failed', 'disposed', 'unloading']
 // 用人类可读的职责说明配合真实状态，便于理解停用后哪些能力会受影响。
@@ -17,7 +17,11 @@ const DESCRIPTIONS: Record<string, string> = {
   // 适配器是模型路由提供方，不是另一套 AgentLoop。
   'deepseek-api-key': '真实 DeepSeek 适配器', 'offline-provider': '离线模拟适配器',
   // MCP 连接在停用时释放服务进程并移除远端工具，不影响普通聊天。
-  'mcp-demo': 'MCP 工具与仿真后台',
+  'mcp-environment': 'P1 环境数据 MCP',
+  'mcp-acoustic-field': 'P2 声场 MCP',
+  'mcp-signal-processing': 'P3 信号处理 MCP',
+  'mcp-replay': 'P4 回放 MCP',
+  'mcp-evaluation': 'P5 评估 MCP',
   // 这些是新增激活的官方能力，不计入七个对话核心服务。
   'fs-local': '官方本地文件系统', 'working-directory': '官方会话工作目录',
   skill: '官方技能注册表', 'skill-filesystem': '官方本地技能发现 + demo 启停适配', 'tool-skill': '官方技能加载与显式调用',

@@ -2,7 +2,7 @@
 import { ToolCallId, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm'
 import { randomUUID } from 'node:crypto'
 
-export function* offlineMcp(options: GenerateOptions): Generator<StreamChunk, boolean> {
+export function* offlineMcp(options: GenerateOptions, showPlatformResults = false): Generator<StreamChunk, boolean> {
   // 只处理当前用户的 /mcp 命令，避免把前一轮工具结果当作本轮结果。
   const index = options.messages.findLastIndex(message => message.role === 'user' && (message.source === undefined || message.source.kind === 'user'))
   const prompt = options.messages[index]?.content.filter(block => block.type === 'text').map(block => block.text).join('') ?? ''
@@ -12,8 +12,24 @@ export function* offlineMcp(options: GenerateOptions): Generator<StreamChunk, bo
   const result = options.messages.slice(index + 1).findLast(message => message.role === 'tool')
   let text = ''
   let args: unknown
-  if (!name) text = '用法：/mcp 完整工具名 JSON参数，例如 /mcp mcp__demo__add {"a":2,"b":3}。无参数时可省略 JSON。'
-  else if (result?.role === 'tool') text = `MCP ${result.isError ? '调用失败' : '调用完成'}。完整原始内容请查看工具返回结果。`
+  if (!name) text = '用法：/mcp 完整工具名 JSON参数，例如 /mcp mcp__environment__get_environment_config。无参数时可省略 JSON。'
+  else if (result?.role === 'tool') {
+    text = `MCP ${result.isError ? '调用失败' : '调用完成'}。完整原始内容请查看工具返回结果。`
+    if (/^mcp__(environment|acoustic_field|signal_processing|replay|evaluation)__/.test(name)) {
+      const rawResult = result.content.find(block => block.type === 'text')
+      if (rawResult?.type === 'text') {
+        if (showPlatformResults) {
+          text = `MCP ${result.isError ? '调用失败' : '调用完成'}。\n${rawResult.text}`
+        } else {
+          try {
+            const value = JSON.parse(rawResult.text)
+            if (result.isError && typeof value.error?.message === 'string') text += '\n' + value.error.message
+            else if (typeof value.data?.path === 'string') text += '\n已保存：' + value.data.path
+          } catch { /* 协议错误仍保留工具状态。 */ }
+        }
+      }
+    }
+  }
   else if (!name.startsWith('mcp__') || !options.tools?.some(tool => tool.name === name)) text = '该 MCP 工具当前不可用，请检查服务连接和启用状态，在 MCP 管理页查看当前可用工具名称。'
   else {
     // JSON 必须为对象；更具体的字段类型交给实际工具的 schema 校验。

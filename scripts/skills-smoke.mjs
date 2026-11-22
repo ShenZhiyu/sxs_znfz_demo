@@ -45,63 +45,37 @@ const catalogNames = run => requestMessages(run).filter(message => message.sourc
   .flatMap(message => message.source.entries.map(entry => entry.name))
 let app
 try {
-  // 迁移旧版默认停用设置，同时保留第一份原配置备份。
+  // 迁移旧版配置时保留备份，已移除的内置技能不会出现在目录中。
   const legacy = JSON.stringify({ version: 1, skills: [], builtinEnabled: false }) + '\n'
   await writeFile(config, legacy, { mode: 0o600 })
   app = await start()
   const initial = (await api(app)).value
   assert.equal(initial.runtimeReady, true)
-  assert.equal(initial.skills.length, 2)
-  assert.deepEqual(initial.commands.map(row => row.name), ['tender-writing'])
+  const linkSkill = 'communication-link-simulation'
+  assert.deepEqual(initial.skills.map(row => row.name), [linkSkill])
+  assert.deepEqual(initial.commands.map(row => row.name), [linkSkill])
+  const linkRun = await chat(app, await session(app), '/' + linkSkill)
+  const linkInstructions = requestMessages(linkRun).find(message => message.source?.kind === 'skill-invocation')
+  assert.ok(linkInstructions)
+  const linkText = JSON.stringify(linkInstructions.content)
+  for (const required of ['等待用户明确确认', '用户自有算法', 'mcp__environment__list_environment_datasets',
+    'mcp__acoustic_field__get_acoustic_field_result', 'mcp__signal_processing__calculate_bit_error_rate',
+    'mcp__replay__submit_replay_job', 'mcp__evaluation__submit_evaluation_job']) {
+    assert.ok(linkText.includes(required), required)
+  }
+  assert.equal(calls(linkRun).length, 0)
   const pluginNames = (await api(app, '/api/plugins')).value.entries.map(entry => entry.module)
   for (const name of ['skill', 'tool-skill', 'working-directory', 'fs-local']) assert.ok(pluginNames.includes('@deepseek-ai/dsh-' + name))
   assert.ok(pluginNames.some(name => name.endsWith('/src/skill-filesystem.ts')))
-  const builtin = initial.skills.find(row => row.id === 'directory:underwater-simulation')
-  assert.equal(builtin.source, 'filesystem')
-  assert.equal(builtin.managed, true)
   const migrated = JSON.parse(await readFile(config, 'utf8'))
   assert.equal(migrated.version, 2)
-  assert.equal(migrated.directoryEnabled['underwater-simulation'], false)
+  assert.deepEqual(migrated.directoryEnabled, {})
   assert.equal(await readFile(config + '.v1.bak', 'utf8'), legacy)
-  // 标书技能为真实文件目录贡献，保留脚本资源路径，由官方插件负责显式注入。
-  const tender = initial.skills.find(row => row.name === 'tender-writing')
-  assert.equal(tender.source, 'filesystem')
-  assert.equal(tender.managed, true)
-  assert.equal(tender.editable, false)
-  assert.equal(tender.available, true)
-  const tenderRun = await chat(app, await session(app), '/tender-writing 根据样例撰写标书')
-  const tenderRequests = JSON.stringify(tenderRun.events.filter(event => event.kind === 'llm/request'))
-  assert.match(tenderRequests, /skill-invocation/)
-  assert.match(tenderRequests, /assemble_docx.py/)
-  assert.match(tenderRequests, /tender-writing/)
-  const tenderContents = await readFile(join(root, 'skills/tender-writing/SKILL.md'), 'utf8')
-  const tenderScript = await readFile(join(root, 'skills/tender-writing/scripts/assemble_docx.py'), 'utf8')
-  const tenderLoaded = await chat(app, await session(app), '/skill tender-writing')
-  assert.equal(results(tenderLoaded)[0].data.data.message.isError, false)
-  assert.match(JSON.stringify(results(tenderLoaded)), /skills\/tender-writing/)
-  // 目录停用同时影响实际加载、官方模型目录和显式用户注入；管理页仍能查看源文。
-  const oldSession = await session(app)
-  await chat(app, oldSession, '/tender-writing')
-  assert.equal((await api(app, '/api/skills/toggle', { id: tender.id, enabled: false })).status, 200)
-  assert.ok(!(await api(app)).value.commands.some(row => row.name === tender.name))
-  assert.equal((await api(app, '/api/skills/detail?id=' + tender.id)).value.markdown, tenderContents)
-  const deniedTender = await chat(app, await session(app), '/skill tender-writing')
-  assert.equal(results(deniedTender)[0].data.data.message.isError, true)
-  assert.ok(!catalogNames(deniedTender).includes(tender.name))
-  const noTender = await chat(app, await session(app), '/tender-writing')
-  assert.ok(!requestMessages(noTender).some(message => message.source?.kind === 'skill-invocation'))
-  const stale = await fetch(app.origin + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: oldSession, message: '旧会话' }) })
-  assert.equal(stale.status, 404)
-  assert.equal((await api(app, '/api/skills/delete', { id: tender.id })).status, 403)
-  assert.equal((await api(app, '/api/skills/save', { id: tender.id, markdown: tenderContents, enabled: true })).status, 403)
-  await api(app, '/api/skills/toggle', { id: tender.id, enabled: true })
-  assert.equal(results(await chat(app, await session(app), '/skill tender-writing'))[0].data.data.message.isError, false)
-  assert.equal(await readFile(join(root, 'skills/tender-writing/SKILL.md'), 'utf8'), tenderContents)
-  assert.equal(await readFile(join(root, 'skills/tender-writing/scripts/assemble_docx.py'), 'utf8'), tenderScript)
-  assert.equal(builtin.enabled, false)
-  assert.equal(builtin.editable, false)
-  assert.equal((await api(app, '/api/skills/delete', { id: builtin.id })).status, 403)
-  assert.equal((await api(app, '/api/skills/save', { id: builtin.id, markdown, enabled: true })).status, 403)
+  assert.equal((await api(app, '/api/skills/detail?id=directory:underwater-simulation')).status, 404)
+  const deletedSkill = await chat(app, await session(app), '/skill underwater-simulation')
+  assert.equal(results(deletedSkill)[0].data.data.message.isError, true)
+  const deletedCommand = await chat(app, await session(app), '/underwater-simulation')
+  assert.ok(!requestMessages(deletedCommand).some(message => message.source?.kind === 'skill-invocation'))
   assert.equal((await api(app, '/api/skills/detail?id=../../etc/passwd')).status, 404)
   const existingSession = await session(app)
   const revision = (await api(app)).value.revision
@@ -151,7 +125,6 @@ try {
 
   const changed = markdown.replace('BODY_ONLY_MARKER', 'EDITED_BODY_MARKER')
   await api(app, '/api/skills/save', { id: skill.id, markdown: changed, enabled: true })
-  await api(app, '/api/skills/toggle', { id: builtin.id, enabled: true })
   const tree = (await api(app, '/api/plugins')).value.entries
   const promptId = tree.find(entry => entry.key === 'system-prompt').id
   await api(app, '/api/plugins/toggle', { id: promptId, enabled: false })
@@ -165,24 +138,6 @@ try {
   assert.equal((await api(app)).value.runtimeReady, true)
   const restoredRuntime = await chat(app, await session(app), '/skill test-skill')
   assert.match(JSON.stringify(results(restoredRuntime)), /EDITED_BODY_MARKER/)
-  const builtinRun = await chat(app, await session(app), '/skill underwater-simulation')
-  assert.equal(results(builtinRun)[0].data.data.message.isError, false)
-  assert.match(JSON.stringify(results(builtinRun)), /mcp__demo__run_simulation/)
-  // 目录提供方停止/恢复时，停用技能不能重新泄漏，网页技能也不应被一并移除。
-  const filesystem = tree.find(entry => entry.key === 'skill-filesystem')
-  await api(app, '/api/skills/toggle', { id: tender.id, enabled: false })
-  await api(app, '/api/plugins/toggle', { id: filesystem.id, enabled: false })
-  const withoutFiles = (await api(app)).value
-  assert.equal(withoutFiles.skills.find(row => row.id === builtin.id).available, false)
-  assert.equal(withoutFiles.skills.find(row => row.id === tender.id).enabled, false)
-  assert.ok(withoutFiles.commands.some(row => row.name === 'test-skill'))
-  assert.ok(!withoutFiles.commands.some(row => row.name === builtin.name))
-  await api(app, '/api/skills/toggle', { id: tender.id, enabled: true })
-  assert.equal((await api(app)).value.skills.find(row => row.id === tender.id).available, false)
-  await api(app, '/api/skills/toggle', { id: tender.id, enabled: false })
-  await api(app, '/api/plugins/toggle', { id: filesystem.id, enabled: true })
-  assert.equal((await api(app)).value.commands.filter(row => row.name === builtin.name).length, 1)
-  assert.ok(!(await api(app)).value.commands.some(row => row.name === tender.name))
   // 同一官方策略必须约束模型工具和用户显式入口，不能只隐藏补全。
   const userOnly = markdown.replace('name: test-skill', 'name: user-only').replace('description:', 'disable-model-invocation: true\ndescription:')
   const userSaved = (await api(app, '/api/skills/save', { markdown: userOnly, enabled: true })).value
@@ -231,11 +186,36 @@ try {
   assert.equal(localRow.source, 'filesystem')
   assert.equal(localRow.managed, true)
   assert.equal(localRow.editable, false)
-  assert.match((await api(app, '/api/skills/detail?id=' + localRow.id)).value.markdown, /FILESYSTEM_MARKER/)
+  const localContents = await readFile(join(local, 'SKILL.md'), 'utf8')
+  assert.equal((await api(app, '/api/skills/detail?id=' + localRow.id)).value.markdown, localContents)
+  assert.equal((await api(app, '/api/skills/delete', { id: localRow.id })).status, 403)
+  assert.equal((await api(app, '/api/skills/save', { id: localRow.id, markdown: localContents, enabled: true })).status, 403)
+  const oldSession = await session(app)
+  const invoked = requestMessages(await chat(app, oldSession, '/local-demo'))
+  assert.ok(invoked.some(message => message.source?.kind === 'skill-invocation' &&
+    JSON.stringify(message.content).includes('FILESYSTEM_MARKER')))
   assert.equal((await api(app, '/api/skills/toggle', { id: localRow.id, enabled: false })).status, 200)
-  assert.equal(results(await chat(app, await session(app), '/skill local-demo'))[0].data.data.message.isError, true)
+  const deniedLocal = await chat(app, await session(app), '/skill local-demo')
+  assert.equal(results(deniedLocal)[0].data.data.message.isError, true)
+  assert.ok(!catalogNames(deniedLocal).includes(localRow.name))
+  const inactive = await chat(app, await session(app), '/local-demo')
+  assert.ok(!requestMessages(inactive).some(message => message.source?.kind === 'skill-invocation'))
+  const stale = await fetch(app.origin + '/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId: oldSession, message: '旧会话' }) })
+  assert.equal(stale.status, 404)
+
+  // 目录提供方停止时保留网页技能，恢复时继续应用目录技能的启停设置。
+  const filesystem = tree.find(entry => entry.key === 'skill-filesystem')
+  await api(app, '/api/plugins/toggle', { id: filesystem.id, enabled: false })
+  const withoutFiles = (await api(app)).value
+  assert.equal(withoutFiles.skills.find(row => row.id === localRow.id).available, false)
+  assert.ok(withoutFiles.commands.some(row => row.name === 'test-skill'))
+  assert.ok(!withoutFiles.commands.some(row => row.name === localRow.name))
+  await api(app, '/api/plugins/toggle', { id: filesystem.id, enabled: true })
+  assert.ok(!(await api(app)).value.commands.some(row => row.name === localRow.name))
   await api(app, '/api/skills/toggle', { id: localRow.id, enabled: true })
-  assert.match(JSON.stringify((await chat(app, await session(app), '/local-demo')).events.filter(event => event.kind === 'llm/request')), /FILESYSTEM_MARKER/)
+  assert.equal((await api(app)).value.commands.filter(row => row.name === localRow.name).length, 1)
+  assert.equal(await readFile(join(local, 'SKILL.md'), 'utf8'), localContents)
   await writeFile(join(local, 'SKILL.md'), markdown.replace('test-skill', 'local-demo').replace('BODY_ONLY_MARKER', 'FRESH_FILESYSTEM_BODY'))
   assert.match(JSON.stringify((await chat(app, await session(app), '/local-demo')).events.filter(event => event.kind === 'llm/request')), /FRESH_FILESYSTEM_BODY/)
   await rm(local, { recursive: true })
@@ -246,14 +226,12 @@ try {
   app = await start()
   const afterRestart = (await api(app)).value
   assert.equal(afterRestart.skills.find(row => row.id === skill.id).available, true)
-  assert.equal(afterRestart.skills.find(row => row.id === builtin.id).enabled, true)
-  assert.equal(afterRestart.skills.find(row => row.id === tender.id).enabled, false)
-  assert.ok(!afterRestart.commands.some(row => row.name === tender.name))
+  assert.ok(!afterRestart.skills.some(row => row.name === 'tender-writing'))
+  assert.ok(!afterRestart.commands.some(row => row.name === 'tender-writing'))
   assert.equal(results(await chat(app, await session(app), '/skill tender-writing'))[0].data.data.message.isError, true)
   const persisted = await chat(app, await session(app), '/skill test-skill')
   assert.match(JSON.stringify(results(persisted)), /EDITED_BODY_MARKER/)
   await api(app, '/api/skills/delete', { id: skill.id })
-  await api(app, '/api/skills/toggle', { id: builtin.id, enabled: false })
   assert.equal((await api(app, '/api/skills/detail?id=' + skill.id)).status, 404)
   const removed = await chat(app, await session(app), '/skill test-skill')
   assert.equal(results(removed)[0].data.data.message.isError, true)
@@ -261,15 +239,14 @@ try {
   await app.stop()
   app = undefined
 
-  // 旧版已启用状态与已有网页技能也必须无损迁移，不能退回默认值。
+  // 旧版内置开关开启时也应迁移已有网页技能并保留备份。
   await rm(config + '.v1.bak')
   const legacyEnabled = JSON.stringify({ version: 1, builtinEnabled: true,
     skills: [{ id: skill.id, enabled: true, markdown, updatedAt: 1 }] })
   await writeFile(config, legacyEnabled)
   app = await start()
   const migratedEnabled = (await api(app)).value
-  assert.equal(migratedEnabled.skills.find(row => row.id === builtin.id).enabled, true)
-  assert.equal(migratedEnabled.skills.find(row => row.id === tender.id).enabled, true)
+  assert.deepEqual(migratedEnabled.skills.map(row => row.name).sort(), [linkSkill, 'test-skill'])
   assert.equal(migratedEnabled.skills.find(row => row.id === skill.id).enabled, true)
   assert.equal(await readFile(config + '.v1.bak', 'utf8'), legacyEnabled)
   assert.equal(JSON.parse(await readFile(config, 'utf8')).version, 2)

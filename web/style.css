@@ -918,22 +918,6 @@ textarea::placeholder {
 /* 结束响应式覆盖。 */
 }
 
-/* 仿真资源与节点状态在调试栏内展示，长任务 ID 不撑宽页面。 */
-.simulation-resources { padding:12px; margin-bottom:15px; border:1px solid #d4dfce; border-radius:9px; font-size:12px; line-height:1.8; color:#50694b; overflow-wrap:anywhere; }
-/* 任务进度填满面板但不改变页面宽度。 */
-#simulation-progress { width:100%; height:14px; accent-color:#547b46; }
-/* 每个模板阶段保持清楚边界，内部节点仍按依赖推进。 */
-.simulation-group { margin:15px 0; padding:12px; border:1px solid #dce3d6; border-radius:10px; }
-/* 阶段标题区分信道、通信和链路父模块。 */
-.simulation-group h4 { margin:0 0 9px; font-size:13px; color:#54704c; }
-/* 节点行允许长依赖和状态在手机上换行。 */
-.simulation-node { margin:8px 0; padding:9px; border-left:3px solid #bac9b0; background:#f9fbf7; font-size:12px; overflow-wrap:anywhere; }
-/* 运行中与失败节点使用不同颜色，文字同时保留状态。 */
-.simulation-node[data-state="running"] { border-color:#3b8868; }
-/* 错误色只辅助表达，不替代完整错误文字。 */
-.simulation-node[data-state="failed"] { border-color:#b35c48; }
-/* 子节点附带资源、依赖与串行锁说明。 */
-.simulation-node small { display:block; margin-top:6px; color:#819078; line-height:1.6; }
 
 /* MCP 卡片按服务分组，长程序路径和 URL 可以折行。 */
 .mcp-list { display:grid; gap:14px; min-width:0; }

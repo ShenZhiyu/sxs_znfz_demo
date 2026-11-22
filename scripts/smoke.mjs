@@ -81,7 +81,7 @@ assert.deepEqual([...tree.stdout.matchAll(/^- id: (.+)$/gm)].map(match => match[
   // 列出预期七个核心插件；这里是测试预期，不是另一份实际启动注册代码。
   'llm', 'session', 'session-projection', 'system-prompt', 'tools', 'agent', 'agent-loop',
   // 另有真实模型适配器、MCP、官方 Bash 及依赖和终端入口；“七个核心”不表示总条目只有七项。
-  'deepseek-api-key', 'mcp-demo', 'fs-local', 'working-directory', 'subprocess-local', 'bash-local', 'shell-env', 'tool-bash', 'minimal-chat',
+  'deepseek-api-key', 'mcp-environment', 'mcp-acoustic-field', 'mcp-signal-processing', 'mcp-replay', 'mcp-evaluation', 'fs-local', 'working-directory', 'subprocess-local', 'bash-local', 'shell-env', 'tool-bash', 'minimal-chat',
 // 结束数组字面量，并把完整数组交给外层调用。
 ])
 // 组合断言通过后才打印结论；这一项保证 demo 维持最小核心结构。

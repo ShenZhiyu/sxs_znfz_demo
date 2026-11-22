@@ -53,8 +53,6 @@ try {
   run(['run', 'web:smoke'])
   // 调试测试使用本机协议服务器，不消耗真实模型额度。
   run(['run', 'debug:smoke'])
-  // MCP 专项测试证明复制后的客户端和本机服务也能独立发现、调用和恢复。
-  run(['run', 'mcp:smoke'])
   // 网页注册的服务也必须在无相邻仓库的环境中独立连接、保存和恢复。
   run(['run', 'mcp:management:smoke'])
   // 在独立副本确认技能目录、标准 Markdown 和按需加载工具可用。
@@ -67,7 +65,8 @@ try {
   run(['run', 'sessions:smoke'])
   // 用复制的模板和节点脚本验证资源约束、数值计算和 Agent 集成。
   run(['run', 'simulation:test'])
-  run(['run', 'simulation:smoke'])
+  run(['run', 'mock:platforms:test'])
+  run(['run', 'platform:mcp:smoke'])
   // 只有安装和全部检查都成功才输出最终结果。
   console.log('独立运行验证通过：全新目录安装、框架构建、类型检查、终端、Web、调试、MCP 与仿真功能。')
 // finally 保证失败时也不会留下这次测试的安装产物。

@@ -1,41 +1,16 @@
-# 水下通信链路仿真 MCP 演示
+# 水下通信链路本地模板仿真
 
-本目录提供可运行的本机完整演示：Agent 调用真实 MCP，模板脚本负责查询资源、动态申请配额、执行仿真 DAG、回收资源和生成报告。数值计算在独立 Node 子进程中执行，进度来自后台事件，不由浏览器或语言模型填写。
+Agent 的工具接入见[五平台 HTTP Mock 与 MCP 接入](platform-mock/README.md)。
 
-资源池是单个 MCP 服务实例内的演示配额账本，不是 Slurm/Kubernetes，也不提供 CPU/内存硬隔离。信道与链路采用简化模型，用于演示交互、流程和执行约束，不作为工程设计或海试预测结论。
+本目录的本地模板演示查询资源、申请配额、执行仿真 DAG 并生成报告。数值计算在独立 Node 子进程中执行。资源池是进程内配额账本，信道和链路采用简化模型。
 
 ## 1. 先运行
 
-在 dsh-demo 根目录执行：
-
 ```bash
-npm ci
-npm run web -- --offline
+npm run simulation -- small
 ```
 
-打开日志中的本机地址，在聊天框输入：
-
-```text
-/sim-resources
-/simulate small
-```
-
-第二条会持续输出真实任务状态。右侧“仿真任务”标签显示集群配额、任务列表、阶段和节点进度、依赖、串行锁、完整事件与结果。可以取消任务，也可以下载完整任务 JSON。
-
-支持的离线命令：
-
-| 命令 | 行为 |
-| --- | --- |
-| `/sim-resources` | 经 MCP 查询当前配额和本机资源观测。 |
-| `/simulate small` | 小规模完整链路仿真，并自动查询状态直到终态。 |
-| `/simulate medium` / `/simulate large` | 更大配额及更多真实比特、分组样本。 |
-| `/simulate small {"distanceM":2000,"carrierKhz":10,"seed":87}` | 用显式 JSON 覆盖场景默认值。 |
-| `/sim-status 任务UUID` | 查看指定任务；同一聊天已有任务时可省略 UUID。 |
-| `/sim-cancel 任务UUID` | 取消指定任务并等待资源回收；同一聊天可省略 UUID。 |
-
-离线模型只识别这些固定命令。真实模型模式可说“先查看集群资源，再运行一个 2 千米、12 kHz 的中等规模水下链路仿真，持续查看状态并总结结果”；工具描述会引导模型调用相同模板流程。模型是否遵循意图取决于其能力，但后台始终强制资源、依赖和串行约束。
-
-任务独立于聊天轮次。停止生成、新对话或关闭网页不会自动取消后台任务；需要显式取消。停用 MCP 插件或正常停止整个服务，会先取消该服务拥有的活动任务，再关闭子进程和回收资源。历史快照保存在 `.dsh/simulations/`，重启后可以查看，活动任务不会自动恢复执行。
+命令持续输出 JSON Lines 任务事件和终态。可按 Ctrl+C 取消任务并回收配额。任务快照保存在 `.dsh/simulations/`。
 
 ## 2. 模板如何约束执行
 
@@ -97,29 +72,9 @@ flowchart TD
 
 资源查询快照与闲置租约默认有效期都是 30 秒，在后续账本操作时检查到期。运行中的租约不按闲置 TTL 回收。一个租约只能绑定一个任务；释放正在运行的租约会被拒绝，应先取消任务。
 
-## 4. MCP 工具
+## 4. 目标与任务状态
 
-下面是服务原始工具名；Agent 看到的公开名带 `mcp__demo__` 前缀，例如 `mcp__demo__run_simulation`。
-
-| 工具 | 输入要点 | 返回与用途 |
-| --- | --- | --- |
-| `simulation_templates` | 无 | 版本、阶段、节点、依赖、串行组、默认参数与规模策略。 |
-| `cluster_resources` | 无 | 有时效的 snapshotId、容量、占用、可用额度和本机观测。 |
-| `simulation_plan` | scale、target、parameters | 不可变计划 ID、所需配额和展开后的 DAG。 |
-| `request_resources` | planId、snapshotId | 专属 lease ID，或资源/快照错误。 |
-| `release_resources` | leaseId | 归还尚未提交的资源。 |
-| `submit_simulation` | planId、leaseId | 立即返回异步任务及 job ID。 |
-| `run_simulation` | scale、target、parameters | 按 procedure 自动规划、查资源、申请、提交。默认 target=link。 |
-| `simulate_channel` | scale、parameters | 只运行信道目标及所需场景前置。 |
-| `simulate_communication` | scale、parameters | 运行通信目标，自动包含同参数的信道前置。 |
-| `simulate_link` | scale、parameters | 运行完整链路，包括所有前置和报告。 |
-| `simulation_status` | jobId、可选 afterSeq/waitMs | 实时快照、节点状态、结果及新增事件；waitMs 最大 2000。 |
-| `list_simulations` | 无 | 所有当前服务可见任务的摘要，包括恢复的历史。 |
-| `cancel_simulation` | jobId | 等待取消与资源回收后返回最终状态。 |
-
-`target` 可选 channel、communication、link。单独调用通信或链路工具不会跳过上游：模板会求目标的依赖闭包并在同一任务里执行。当前不跨任务复用中间结果，以免混用不同场景、版本和种子的输出。连续跑完整链路优先调用一次 `run_simulation` 或 `simulate_link`。
-
-状态是 queued → running → completed/failed/cancelled；取消过程中会短暂出现 cancelling。事件 seq 连续递增，资源查询、申请、释放、节点开始、进度和终态都有记录。Agent 使用 afterSeq 只取新事件，Web 查看和下载保留全部事件。
+`target` 可选 `channel`、`communication`、`link`。运行指定目标时，模板在同一任务中执行所需的上游节点。任务状态为 queued → running → completed/failed/cancelled。取消期间可能短暂出现 cancelling。资源申请和释放、节点进度以及终态均写入连续编号的事件。
 
 ## 5. 模板化脚本与每个文件
 
@@ -131,14 +86,9 @@ flowchart TD
 | `resources.mjs` | 集群账本、快照、动态租约、绑定与释放的实际强制逻辑。 |
 | `workflow.mjs` | 规划、模板校验、依赖闭包、生成脚本、资源感知调度、全局串行锁、状态持久化和收尾。 |
 | `kernels.mjs` | 简化信道、通信比特与链路分组数值内核，支持固定种子复现。 |
-| `mcp.mjs` | MCP 工具 schema、描述及协议适配；本身不复制调度逻辑。 |
 | `workflow.spec.mjs` | 真子进程验证资源边界、串并行、故障、取消、脚本生成和历史恢复。 |
 | `../scripts/simulation-node.mjs` | 通用节点执行脚本：stdin JSON 输入，stdout JSON Lines 进度与结果。 |
 | `../scripts/simulation-workflow.mjs` | 无 Agent 的脚本入口，复用相同模板流程，输出增量事件。 |
-| `../scripts/simulation-smoke.mjs` | 官方 MCP 协议及真实 Agent/Web 的端到端验证。 |
-| `../src/offline-simulation.ts` | 离线固定命令规则，只发 MCP 调用和读取结果。 |
-| `../src/simulation-monitor.ts` | Web 状态/资源/取消接口，始终调用同一 MCP 工具。 |
-| `../web/simulation.js` | 一秒刷新任务状态、展示阶段和节点、取消与 JSON 下载。 |
 
 执行时会实例化真正的脚本，例如：
 
@@ -160,7 +110,7 @@ flowchart TD
 
 任务参数以 JSON stdin 传入，子进程使用参数数组启动，不把模型输入拼成 shell 命令。模板必须引用项目内文件和已注册任务；DAG 环、未知任务、无法容纳单个节点的资源配置会在提交前被拒绝。
 
-不用 Agent 也能复现相同流程：
+可按规模和目标运行：
 
 ```bash
 # 完整小规模链路任务。
@@ -175,7 +125,7 @@ npm run simulation -- small communication
 
 - 传播：采用 1.5 扩展系数与 Thorp 吸收近似，计算标量损失和距离/声速传播时延。参考 [ns-3 UAN Thorp 模型](https://www.nsnam.org/doxygen/d9/d91/classns3_1_1_uan_prop_model_thorp.html)。
 - 多径：按距离和深度构造三条示意路径，固定相对功率，计算 RMS 时延扩展和简化多普勒；不是 Bellhop、抛物方程或实测海况求解。
-- 噪声：平坦谱密度加上带宽积分，参数单位写在模板和 MCP schema 中。
+- 噪声：平坦谱密度加上带宽积分，参数单位写在模板 中。
 - 通信：根据标量 SNR、比特率及启发式 ISI 惩罚计算有效 Eb/N0，生成随机比特和高斯噪声，实际做阈值检测统计错误。QPSK 使用 Gray 映射等效的 I/Q 二进制支路；理想 AWGN 比特检测基准见 [MathWorks 相位调制说明](https://www.mathworks.com/help/comm/ug/phase-modulation.html)。没有执行完整采样波形卷积、均衡或纠错编码。
 - 链路：按独立误码假设估计分组成功概率，再用固定种子的蒙特卡洛统计投递率和有效吞吐。时延只含传播与发送时间，不含排队、MAC 竞争或重传。
 
@@ -183,17 +133,16 @@ npm run simulation -- small communication
 
 ## 7. 替换为真实后台的位置
 
-先修改模板中的资源容量、规模策略、节点和依赖；保留明确的单位与范围。然后在 resources.mjs 的 inspect/reserve/bind/release 对接实际集群 API，在节点脚本模板/worker 位置接入真实信道、通信和链路程序，继续输出相同进度协议。语言模型、MCP 工具名与网页无需承担节点排序。
+先修改模板中的资源容量、规模策略、节点和依赖；保留明确的单位与范围。然后在 resources.mjs 的 inspect/reserve/bind/release 对接实际集群 API，在节点脚本模板/worker 位置接入真实信道、通信和链路程序，继续输出相同进度协议。节点排序由模板负责。
 
-当前配额和全局锁只在一个 MCP 服务实例内共享。同时启动两个独立 demo 进程会有各自账本；真正的多节点集群需集中式调度、持久租约和身份权限。当前版本不自动重试失败节点、不跨任务缓存结果，也不在异常进程崩溃后恢复执行。
+当前配额和全局锁只在一个模板运行进程内共享。同时启动两个独立 demo 进程会有各自账本；真正的多节点集群需集中式调度、持久租约和身份权限。当前版本不自动重试失败节点、不跨任务缓存结果，也不在异常进程崩溃后恢复执行。
 
 ## 8. 验证
 
 ```bash
 npm run simulation:test
-npm run simulation:smoke
 # 在无相邻仓库的新副本里重新安装、构建和验证全部功能。
 npm run standalone:smoke
 ```
 
-第一组检查真实子进程的时间区间和事件顺序，证明前置完成、串行互斥、并行重叠和资源上限，并验证出错/取消后子进程退出。第二组经过真实 MCP stdio、官方 CLI、AgentLoop 与 HTTP/SSE，验证 Agent 持续读取状态、Web 监控同一任务、数值报告和取消回收。所有验证都使用离线模型，不调用收费外部 API。
+模板测试检查真实子进程的时间区间和事件顺序，验证前置依赖、串行互斥、并行重叠和资源上限，并验证失败和取消后子进程退出。独立安装验证还覆盖五平台 MCP 接入。

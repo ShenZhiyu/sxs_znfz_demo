@@ -481,11 +481,11 @@
   }
 
   // 标签只切换视图，不改变模型调用状态或删记录。
-  for (const name of ['plugins', 'raw', 'timeline', 'simulation', 'mcp', 'skills', 'files']) $('tab-' + name).addEventListener('click', () => {
+  for (const name of ['plugins', 'raw', 'timeline', 'mcp', 'skills', 'files']) $('tab-' + name).addEventListener('click', () => {
     // 保存当前视图，用于轮询时决定是否读取历史详情。
     tab = name
     // 同步标签的视觉状态和无障碍按下状态。
-    for (const other of ['plugins', 'raw', 'timeline', 'simulation', 'mcp', 'skills', 'files']) {
+    for (const other of ['plugins', 'raw', 'timeline', 'mcp', 'skills', 'files']) {
       // hidden 从布局移除非当前面板。
       $('panel-' + other).hidden = other !== name
       // selected 只控制样式。

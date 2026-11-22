@@ -23,8 +23,6 @@
   <!-- 依赖图投影负责共享引用和环；配置归属只作为可切换的辅助视图。 -->
   <script src="/plugin-tree-model.js" defer></script>
   <script src="/debugger.js" defer></script>
-  <!-- 仿真面板只查询已有任务和资源，不自行启动后台计算。 -->
-  <script src="/simulation.js" defer></script>
   <!-- MCP 管理页独立处理表单和列表，插件树仍负责展示真实配置层级。 -->
   <script src="/mcp.js" defer></script>
   <!-- defer 脚本按文档顺序执行：本地解析器 → 安全渲染配置 → 聊天入口；无需访问 CDN。 -->
@@ -85,7 +83,7 @@
         <!-- 页面主标题只描述用户任务；h1 也为页面提供清晰的语义结构。 -->
         <h1>水下通信链路仿真。</h1>
         <!-- 显示欢迎说明；br 是明确的换行，文字内容不参与 API 请求。 -->
-        <p>通过 Agent 启动模板化仿真，<br>查看资源申请、任务进度与结果。</p>
+        <p>通过 Agent 调用五个平台，<br>查询环境数据、读取仿真结果并跟踪回放与评估。</p>
         <!-- 组织预设问题按钮；aria-label 描述这组内容的用途。 -->
         <div class="suggestions" aria-label="试试这些话题">
           <!-- data-prompt 保存实际提交的消息，按钮可见文案更短；app.js 用 dataset.prompt 读取该自定义属性。 -->
@@ -93,11 +91,7 @@
           <!-- 第二个预设问题走同一发送流程；无需为每个按钮编写独立的网络请求代码。 -->
           <button type="button" data-prompt="请用简单的例子解释什么是 Agent。">学点新东西 <span aria-hidden="true">↗</span></button>
           <!-- 发送明确的 MCP 教学命令，离线模式也能经过真实工具调用和结果回传。 -->
-          <button type="button" data-prompt="/mcp-add 2 3">试试 MCP 加法 <span aria-hidden="true">↗</span></button>
-          <!-- 固定离线规则也会调用真正的仿真 MCP，不在浏览器生成结果。 -->
-          <button type="button" data-prompt="/simulate small">小规模链路仿真 <span aria-hidden="true">↗</span></button>
-          <!-- 资源查询通过 MCP 获取当前配额与本机观测。 -->
-          <button type="button" data-prompt="/sim-resources">查看集群资源 <span aria-hidden="true">↗</span></button>
+          <button type="button" data-prompt="/mcp mcp__environment__get_environment_config">查询环境配置 <span aria-hidden="true">↗</span></button>
         <!-- 闭合预设按钮容器。 -->
         </div>
       <!-- 结束欢迎区；隐藏它不会删除后面的消息列表容器。 -->
@@ -142,7 +136,7 @@
     <!-- 面板标题和服务状态独立于聊天，核心依赖停止后仍可继续操作。 -->
     <header class="debug-header"><div><span class="eyebrow">AGENT INSPECTOR</span><h2>运行与调用</h2></div><span id="debug-state" class="state-pill">正在读取</span></header>
     <!-- 标签切换不同任务，插件启停不会清除已经捕获的调用记录。 -->
-    <nav class="debug-tabs" aria-label="调试视图"><button id="tab-plugins" type="button" class="selected" aria-pressed="true">插件</button><button id="tab-raw" type="button" aria-pressed="false">原始输出</button><button id="tab-timeline" type="button" aria-pressed="false">调用过程</button><button id="tab-simulation" type="button" aria-pressed="false">仿真任务</button><button id="tab-mcp" type="button" aria-pressed="false">MCP 服务</button><button id="tab-skills" type="button" aria-pressed="false">Skill 管理</button><button id="tab-files" type="button" aria-pressed="false">文件</button></nav>
+    <nav class="debug-tabs" aria-label="调试视图"><button id="tab-plugins" type="button" class="selected" aria-pressed="true">插件</button><button id="tab-raw" type="button" aria-pressed="false">原始输出</button><button id="tab-timeline" type="button" aria-pressed="false">调用过程</button><button id="tab-mcp" type="button" aria-pressed="false">MCP 服务</button><button id="tab-skills" type="button" aria-pressed="false">Skill 管理</button><button id="tab-files" type="button" aria-pressed="false">文件</button></nav>
     <section id="panel-files" class="debug-view" hidden>
       <div class="section-heading"><div><h3>工作文件</h3><p>上传参考资料，下载 Agent 生成的文档。</p></div><button id="files-refresh" type="button" class="plain-button">刷新文件</button></div>
       <p id="files-root" class="control-hint"></p>
@@ -229,7 +223,7 @@
         <div id="mcp-stdio-fields">
           <!-- 命令与参数分开传递，不经过 shell 字符串拼接。 -->
           <label for="mcp-command">程序路径 / 命令</label><input id="mcp-command" placeholder="例如 node" autocomplete="off">
-          <label for="mcp-args">参数（JSON 字符串数组）</label><textarea id="mcp-args" rows="3" spellcheck="false" placeholder='["scripts/mcp-server.mjs"]'></textarea>
+          <label for="mcp-args">参数（JSON 字符串数组）</label><textarea id="mcp-args" rows="3" spellcheck="false" placeholder='["simulation/platform-mcp/server.mjs","--platform","P1"]'></textarea>
           <label for="mcp-cwd">工作目录（留空使用项目目录）</label><input id="mcp-cwd" autocomplete="off">
           <!-- 凭据值不从 API 回显，编辑时留空保留，填 {} 明确清空。 -->
           <label for="mcp-env">环境变量（JSON 对象）</label><textarea id="mcp-env" rows="3" spellcheck="false" autocomplete="off" placeholder='例如 {"API_KEY":"…"}；编辑时留空保留，{} 清空'></textarea>
@@ -246,27 +240,6 @@
       </form>
       <!-- 显示实际持久化位置，帮助用户备份和理解项目文件。 -->
       <p id="mcp-storage" class="control-hint"></p>
-    </section>
-    <!-- 仿真任务属于 MCP 后台，可在聊天轮次结束后继续执行。 -->
-    <section id="panel-simulation" class="debug-view" hidden>
-      <!-- 配额明确标记为本机演示值，不伪装成真实计算集群。 -->
-      <h3>水下链路仿真</h3><p class="control-hint">本机演示配额 · 简化数值模型。通过聊天发送 /simulate small 启动；停止生成不会取消后台任务。</p>
-      <!-- 资源余额与每个节点状态都来自同一个 MCP 服务。 -->
-      <div id="simulation-resources" class="simulation-resources">正在查询集群资源…</div>
-      <!-- 全局任务可跨聊天会话查看，当前选择由本页保存。 -->
-      <label class="view-label" for="simulation-select">选择仿真任务</label><select id="simulation-select"><option value="">暂无仿真任务</option></select>
-      <!-- 查询错误不会盖住聊天记录。 -->
-      <p id="simulation-notice" class="debug-notice" role="status"></p>
-      <!-- 任务进度与资源租约保留可访问名称。 -->
-      <p id="simulation-status" class="control-hint" aria-live="polite">发送 /simulate small 开始演示。</p><progress id="simulation-progress" max="100" value="0" aria-label="仿真任务进度"></progress>
-      <!-- 只有显式点击取消才停止后台计算，下载仅生成本机 JSON 文件。 -->
-      <div class="run-actions"><button id="simulation-cancel" type="button" class="plain-button" disabled>取消任务</button><button id="simulation-download" type="button" class="plain-button" disabled>下载任务 JSON</button></div>
-      <!-- 按模板分组展示层级，节点行同时显示其前置依赖与串行锁。 -->
-      <div id="simulation-nodes"></div>
-      <!-- 汇总结果和事件原文均用文本显示，保留全部状态变迁。 -->
-      <h4>结果摘要</h4><pre id="simulation-result" class="raw-content">任务完成后显示。</pre>
-      <!-- 事件顺序由后台连续序号确定，不用前端动画推测执行顺序。 -->
-      <h4>执行事件</h4><pre id="simulation-events" class="raw-content">暂无事件。</pre>
     </section>
     <!-- 两个记录视图共用轮次选择和导出工具；原始 JSON 不按长度截断。 -->
     <div id="run-toolbar" class="run-toolbar" hidden>
