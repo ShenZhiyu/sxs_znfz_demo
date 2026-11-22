@@ -1,0 +1,53 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/agent.ts",
+    "src/inbox.ts",
+    "src/runtime-context.ts",
+    "src/assistant-stream.ts",
+    "src/tool-calls.ts",
+    "src/constants.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../core/session"
+    },
+    {
+      "path": "../../session/session-persistence"
+    },
+    {
+      "path": "../../core/system-prompt"
+    },
+    {
+      "path": "../../core/tools"
+    },
+    {
+      "path": "../../core/agent"
+    },
+    {
+      "path": "../../core/scope"
+    },
+    {
+      "path": "../../session/session-projection"
+    }
+  ]
+}

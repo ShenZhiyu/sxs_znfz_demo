@@ -1,0 +1,27 @@
+{
+  "name": "@deepseek-ai/dsh-cmdline",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Immutable command-line handoff from a dsh launcher to any app plugin that injects cmdlineArgs",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/boot/cmdline"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "commander": "^15.0.0"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

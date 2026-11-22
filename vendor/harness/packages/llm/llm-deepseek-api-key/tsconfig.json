@@ -1,0 +1,36 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/config.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../llm"
+    },
+    {
+      "path": "../llm-deepseek"
+    },
+    {
+      "path": "../../util/launch-environment"
+    },
+    {
+      "path": "../../credentials/credentials"
+    },
+    {
+      "path": "../../../vendor/loader"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    }
+  ]
+}

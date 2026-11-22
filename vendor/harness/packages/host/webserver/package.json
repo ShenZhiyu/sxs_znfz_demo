@@ -1,0 +1,31 @@
+{
+  "name": "@deepseek-ai/dsh-host-webserver",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Web route-registration plugin: HTTP and upgrade routes, index transform taps, and static dist fallback; knows no harness concepts",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/host/webserver"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "compression": "^1.8.1",
+    "ipaddr.js": "^2.5.0",
+    "negotiator": "^1.1.0"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

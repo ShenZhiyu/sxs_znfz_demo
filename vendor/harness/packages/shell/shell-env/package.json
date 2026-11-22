@@ -1,0 +1,32 @@
+{
+  "name": "@deepseek-ai/dsh-shell-env",
+  "version": "0.2.1-rc.2",
+  "description": "Tool-independent managed DSH_* shell environment registry",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/shell/shell-env"
+  },
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-shell": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.2"
+  }
+}

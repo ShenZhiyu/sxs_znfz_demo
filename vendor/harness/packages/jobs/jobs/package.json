@@ -1,0 +1,38 @@
+{
+  "name": "@deepseek-ai/dsh-jobs",
+  "version": "0.2.1-rc.2",
+  "description": "Background job registry (ctx.jobs) for the DeepSeek Harness — shared ids, owner isolation, polling, cancellation, and completion listeners for long-running tool work",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/jobs/jobs"
+  },
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./brand": {
+      "types": "./lib/types/brand.d.ts",
+      "default": "./src/brand.ts"
+    },
+    "./view": {
+      "types": "./lib/types/view.d.ts",
+      "default": "./src/view.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-workspace": "0.2.1-rc.2",
+    "@deepseek-ai/cordis": "4.0.5"
+  }
+}

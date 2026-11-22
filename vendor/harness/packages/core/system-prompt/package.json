@@ -1,0 +1,30 @@
+{
+  "name": "@deepseek-ai/dsh-system-prompt",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "System prompt assembly registry for the DeepSeek Harness",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/core/system-prompt"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

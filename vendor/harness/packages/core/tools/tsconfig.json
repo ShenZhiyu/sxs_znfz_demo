@@ -1,0 +1,62 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/presentation.ts",
+    "src/json-schema.ts",
+    "src/ptc.ts",
+    "src/schema.ts",
+    "src/ptc-calls.ts",
+    "src/types.ts",
+    "src/ts-types.ts",
+    "src/py-types.ts",
+    "src/testing.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../core/session"
+    },
+    {
+      "path": "../../ptc-runtime/ptc-runtime"
+    },
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../core/system-prompt"
+    },
+    {
+      "path": "../../core/agent"
+    },
+    {
+      "path": "../../core/scope"
+    },
+    {
+      "path": "../../interaction/user-approval"
+    },
+    {
+      "path": "../../sandbox/sandbox"
+    },
+    {
+      "path": "../../sandbox/sandbox-policy"
+    },
+    {
+      "path": "../../session/working-directory"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "@deepseek-ai/dsh-bash-local",
+  "version": "0.2.1-rc.2",
+  "description": "Local-subprocess implementation of the DeepSeek Harness bash executor seam",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/shell/bash-local"
+  },
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@deepseek-ai/dsh-shell": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-subprocess": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-timeout": "0.2.1-rc.2",
+    "@deepseek-ai/cordis": "4.0.5"
+  }
+}

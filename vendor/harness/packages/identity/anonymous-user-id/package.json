@@ -1,0 +1,27 @@
+{
+  "name": "@deepseek-ai/dsh-anonymous-user-id",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Shared anonymous user identity for DeepSeek Harness telemetry and feedback correlation",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/identity/anonymous-user-id"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-rc.2"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

@@ -1,0 +1,60 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/bin.ts",
+    "src/args.ts",
+    "src/startup-diagnostics.ts",
+    "src/profile-boot.ts",
+    "src/process-shutdown.ts",
+    "src/plugin.ts",
+    "src/dump-config.ts",
+    "src/dump-config-schema.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../vendor/cordis"
+    },
+    {
+      "path": "../../vendor/loader"
+    },
+    {
+      "path": "../../vendor/include"
+    },
+    {
+      "path": "../../packages/boot/app-boot"
+    },
+    {
+      "path": "../../packages/boot/cmdline"
+    },
+    {
+      "path": "../../packages/host/webserver"
+    },
+    {
+      "path": "../../packages/core/session"
+    },
+    {
+      "path": "../../packages/core/system-prompt"
+    },
+    {
+      "path": "../../packages/core/tools"
+    },
+    {
+      "path": "../../packages/util/launch-environment"
+    },
+    {
+      "path": "../../packages/util/home-paths"
+    },
+    {
+      "path": "../../packages/boot/plugin-manager"
+    },
+    {
+      "path": "../../packages/util/atomic-write"
+    }
+  ]
+}

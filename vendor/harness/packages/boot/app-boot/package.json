@@ -1,0 +1,43 @@
+{
+  "name": "@deepseek-ai/dsh-app-boot",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Shared boot glue for the app bins: .env loading, fail-loud Loader guards, snapshot-aware config resolution, and the Loader boot sequence",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/boot/app-boot"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./worker/profile-resolution-bootstrap": {
+      "types": "./lib/types/profile-resolution/worker-bootstrap.d.ts",
+      "default": "./src/profile-resolution/worker-bootstrap.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/cordis-plugin-group": "1.0.5",
+    "@deepseek-ai/cordis-plugin-include": "1.0.10",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.6",
+    "@deepseek-ai/dsh-atomic-write": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-home-paths": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-launch-environment": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-package-manifest": "0.2.1-rc.2",
+    "@eslint-community/regexpp": "^4.12.2",
+    "ajv": "^8.20.0",
+    "js-yaml": "^4.3.2",
+    "node-addon-require-builtin": "^0.1.9",
+    "resolve.exports": "^2.0.3",
+    "semver": "^7.8.5"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

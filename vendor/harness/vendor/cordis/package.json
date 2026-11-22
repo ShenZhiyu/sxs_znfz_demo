@@ -1,0 +1,28 @@
+{
+  "name": "@deepseek-ai/cordis",
+  "version": "4.0.5",
+  "private": true,
+  "description": "Meta-Framework for Modern JavaScript Applications",
+  "type": "module",
+  "license": "MIT",
+  "author": "Shigma <shigma10826@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "vendor/cordis"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cosmokit": "1.8.6",
+    "@standard-schema/spec": "^1.1.0"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

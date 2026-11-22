@@ -1,0 +1,53 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/types.ts",
+    "src/brand.ts",
+    "src/message.ts",
+    "src/retry-policy.ts",
+    "src/error.ts",
+    "src/call-config.ts",
+    "src/adapter-failure.ts",
+    "src/api-key.ts",
+    "src/content.ts",
+    "src/attribution.ts",
+    "src/assistant-stream.ts",
+    "src/assembler.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../util/brand"
+    },
+    {
+      "path": "../../attachment/attachment"
+    },
+    {
+      "path": "../../util/timeout"
+    },
+    {
+      "path": "../../util/crypto"
+    },
+    {
+      "path": "../../util/values"
+    },
+    {
+      "path": "../../typert/protocol"
+    }
+  ]
+}

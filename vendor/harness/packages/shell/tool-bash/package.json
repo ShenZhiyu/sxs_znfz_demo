@@ -1,0 +1,39 @@
+{
+  "name": "@deepseek-ai/dsh-tool-bash",
+  "version": "0.2.1-rc.2",
+  "description": "Model-facing bash tool with optional generic background-job and sandbox-escalation support",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/shell/tool-bash"
+  },
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@deepseek-ai/dsh-agent": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-shell": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-shell-env": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-sandbox-policy": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-jobs": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-user-approval": "0.2.1-rc.2",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-working-directory": "0.2.1-rc.2"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "@deepseek-ai/dsh-llm",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Provider-neutral LLM service interface for the DeepSeek Harness",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/llm/llm"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./brand": {
+      "types": "./lib/types/brand.d.ts",
+      "default": "./src/brand.ts"
+    },
+    "./assistant-stream": {
+      "types": "./lib/types/assistant-stream.d.ts",
+      "default": "./src/assistant-stream.ts"
+    },
+    "./message": {
+      "types": "./lib/types/message.d.ts",
+      "default": "./src/message.ts"
+    },
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-attachment": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-timeout": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-crypto": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-values": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

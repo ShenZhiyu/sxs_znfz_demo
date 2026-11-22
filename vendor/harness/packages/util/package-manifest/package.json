@@ -1,0 +1,24 @@
+{
+  "name": "@deepseek-ai/dsh-package-manifest",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Shared type declarations for package.json.dsh configuration fields",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/util/package-manifest"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {},
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

@@ -1,0 +1,1199 @@
+/* 根元素上的全局默认值和 CSS 变量；变量会被后代元素继承，可集中调整页面主题。 */
+:root {
+  /* 当前 :root 的 font-family = Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif：从左到右选择可用字体，最后用系统无衬线字体兜底；不会自动下载网络字体。 */
+  font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  /* 当前 :root 的 color = #263c35：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#263c35;
+  /* 当前 :root 的 background = #f8f9f5：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#f8f9f5;
+  /* 当前 :root 的 font-synthesis = none：none 禁止浏览器人为合成缺失的粗体或斜体字形，实际字形取决于本机字体。 */
+  font-synthesis:none;
+  /* 当前 :root 的 --green = #2d6050：定义全局绿色主题变量，其他规则用 var(--green) 引用，使按钮与品牌颜色一致。 */
+  --green:#2d6050;
+  /* 当前 :root 的 --muted = #7b857e：定义次要文字颜色；变量名以两个连字符开头，属于 CSS 自定义属性。 */
+  --muted:#7b857e;
+  /* 当前 :root 的 --line = #e3e7df：定义边框分隔线颜色，供多个区域共享。 */
+  --line:#e3e7df;
+/* 结束 :root 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 通配选择器匹配所有元素，统一盒模型，避免不同组件对宽度的理解不一致。 */
+* {
+  /* 当前 * 的 box-sizing = border-box：border-box 使声明宽高包含 padding 与 border，便于推算控件实际尺寸。 */
+  box-sizing:border-box;
+/* 结束 * 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 去掉浏览器默认页边距，让应用容器自行管理留白。 */
+body {
+  /* 当前 body 的 margin = 0：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:0;
+/* 结束 body 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 同时匹配三个元素类型；逗号表示独立选择器列表，不表示嵌套关系。 */
+button,a,textarea {
+  /* 当前 button,a,textarea 的 -webkit-tap-highlight-color = transparent：控制部分移动浏览器点击链接或按钮时的默认高亮，本例用 transparent 使其透明。 */
+  -webkit-tap-highlight-color:transparent;
+/* 结束 button,a,textarea 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 让原生按钮和输入框继承页面字体，避免它们继续使用浏览器默认控件字体。 */
+button,textarea {
+  /* 当前 button,textarea 的 font = inherit：inherit 让控件继承父元素的字体相关属性，消除浏览器对原生表单控件的字体差异。 */
+  font:inherit;
+/* 结束 button,textarea 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 所有按钮的通用交互外观。 */
+button {
+  /* 当前 button 的 cursor = pointer：pointer 表示可点击，default 用于禁用状态；光标外观本身不能代替 disabled 功能。 */
+  cursor:pointer;
+/* 结束 button 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 伪类 :disabled 只匹配禁用按钮，给不可操作状态提供一致反馈。 */
+button:disabled {
+  /* 当前 button:disabled 的 cursor = default：pointer 表示可点击，default 用于禁用状态；光标外观本身不能代替 disabled 功能。 */
+  cursor:default;
+/* 结束 button:disabled 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 匹配浏览器判断需要显示键盘焦点的控件，为键盘导航提供可见轮廓。 */
+button:focus-visible,a:focus-visible,textarea:focus-visible {
+  /* 当前 button:focus-visible,a:focus-visible,textarea:focus-visible 的 outline = 3px solid #8cbda9：焦点轮廓不占布局空间；textarea 的 none!important 会覆盖前面的轮廓规则，输入焦点改由外层 focus-within 边框反馈。 */
+  outline:3px solid #8cbda9;
+  /* 当前 button:focus-visible,a:focus-visible,textarea:focus-visible 的 outline-offset = 4px：让焦点轮廓与控件边界保持距离，避免覆盖内容或边框。 */
+  outline-offset:4px;
+/* 结束 button:focus-visible,a:focus-visible,textarea:focus-visible 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 整体应用容器，控制最大宽度、居中和从上到下的布局。 */
+.app {
+  /* 当前 .app 的 width = min(100%,1000px)：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:min(100%,1000px);
+  /* 聊天列固定为一屏高；内容增多时由内部消息区域滚动，不把整个页面撑长。 */
+  height:100dvh;
+  min-height:0;
+  /* 当前 .app 的 margin = auto：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:auto;
+  /* 当前 .app 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .app 的 flex-direction = column：column 让 flex 子元素按纵向排列，而不是默认横向排列。 */
+  flex-direction:column;
+  /* 当前 .app 的 padding = 0 40px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:0 40px;
+/* 结束 .app 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 页头横向排列品牌与新对话按钮，并在底部添加分隔线。 */
+.header {
+  /* 消息增长时不压缩页头，让品牌和会话按钮保持原位。 */
+  flex-shrink:0;
+  /* 当前 .header 的 height = 96px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+  height:96px;
+  /* 当前 .header 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .header 的 align-items = center：控制 flex 横轴的交叉方向对齐；center 垂直居中，flex-end 在横向容器中对齐底部。 */
+  align-items:center;
+  /* 当前 .header 的 justify-content = space-between：控制 flex 主轴空间分配；space-between 把首尾元素推到两端。 */
+  justify-content:space-between;
+  /* 当前 .header 的 border-bottom = 1px solid var(--line)：只设置底部边框，用于页头与正文之间的细分隔线。 */
+  border-bottom:1px solid var(--line);
+/* 结束 .header 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 品牌链接内部的布局和字体样式，保持图形与名称对齐。 */
+.brand {
+  /* 当前 .brand 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .brand 的 align-items = center：控制 flex 横轴的交叉方向对齐；center 垂直居中，flex-end 在横向容器中对齐底部。 */
+  align-items:center;
+  /* 当前 .brand 的 gap = 12px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:12px;
+  /* 当前 .brand 的 text-decoration = none：none 移除链接默认下划线；链接仍保留可点击语义和键盘焦点。 */
+  text-decoration:none;
+  /* 当前 .brand 的 color = inherit：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:inherit;
+  /* 当前 .brand 的 font-size = 18px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:18px;
+  /* 当前 .brand 的 font-weight = 650：设置字重；较大数字通常更粗，实际可用字重由所选字体决定。 */
+  font-weight:650;
+  /* 当前 .brand 的 letter-spacing = -.5px：调整字符间距；正值拉开，负值收紧，不能用它修改实际字符。 */
+  letter-spacing:-.5px;
+/* 结束 .brand 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 品牌方形标记，用网格居中放置“链”字，不需要图片资源。 */
+.brand-mark {
+  /* 当前 .brand-mark 的 display = grid：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:grid;
+  /* 当前 .brand-mark 的 place-items = center：在 grid 中同时设置两个方向的单元格对齐，本例 center 将品牌字样居中。 */
+  place-items:center;
+  /* 当前 .brand-mark 的 width = 37px：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:37px;
+  /* 当前 .brand-mark 的 height = 37px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+  height:37px;
+  /* 当前 .brand-mark 的 background = var(--green)：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:var(--green);
+  /* 当前 .brand-mark 的 color = white：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:white;
+  /* 当前 .brand-mark 的 border-radius = 11px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:11px;
+  /* 汉字沿用页面字体并在方块中居中，不再保留拉丁字母标记的底部偏移。 */
+  font-size:22px;
+  font-family:inherit;
+  padding-bottom:0;
+  /* 固定标记宽度，避免名称变长后压扁图标。 */
+  flex-shrink:0;
+/* 结束 .brand-mark 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 页头“新对话”按钮的默认样式；只影响外观，不承担释放会话逻辑。 */
+.new-chat {
+  /* 当前 .new-chat 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .new-chat 的 gap = 6px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:6px;
+  /* 当前 .new-chat 的 align-items = center：控制 flex 横轴的交叉方向对齐；center 垂直居中，flex-end 在横向容器中对齐底部。 */
+  align-items:center;
+  /* 当前 .new-chat 的 background = transparent：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:transparent;
+  /* 当前 .new-chat 的 border = 1px solid #d8ded5：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:1px solid #d8ded5;
+  /* 当前 .new-chat 的 border-radius = 9px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:9px;
+  /* 当前 .new-chat 的 color = #45564c：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#45564c;
+  /* 当前 .new-chat 的 padding = 9px 13px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:9px 13px;
+  /* 当前 .new-chat 的 font-size = 13px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:13px;
+/* 结束 .new-chat 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 鼠标悬停时改变按钮背景，为可点击状态提供反馈。 */
+.new-chat:hover {
+  /* 当前 .new-chat:hover 的 background = #eef1e9：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#eef1e9;
+/* 结束 .new-chat:hover 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 后代选择器，仅给新对话按钮内部的加号设置较大字号和紧凑行高。 */
+.new-chat span {
+  /* 当前 .new-chat span 的 font-size = 19px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:19px;
+  /* 当前 .new-chat span 的 line-height = 1：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1;
+/* 结束 .new-chat span 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 主要聊天区域，与页脚共用较窄阅读宽度，并占据纵向剩余空间。 */
+.main {
+  /* 当前 .main 的 width = 100%：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:100%;
+  /* 当前 .main 的 max-width = 740px：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+  max-width:740px;
+  /* 当前 .main 的 margin = 0 auto：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:0 auto;
+  /* 当前 .main 的 flex = 1：在 main 中取 1，表示占用可分配的剩余空间，使少量消息时页脚也位于页面下方。 */
+  flex:1;
+  /* flex 子元素默认不能缩小到内容以下；归零后才能在剩余高度内产生独立滚动。 */
+  min-height:0;
+  overflow-y:auto;
+  /* 到达顶部或底部时，滚轮和触摸滚动不继续传给外层页面。 */
+  overscroll-behavior-y:contain;
+  scrollbar-gutter:stable;
+  /* 当前 .main 的 padding-top = 29px：只设置顶部内边距；手机规则可以单独覆盖它，而不重写其他三边。 */
+  padding-top:29px;
+/* 结束 .main 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 顶部模式文字和状态圆点的横向排列。 */
+.mode-row {
+  /* 当前 .mode-row 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .mode-row 的 align-items = center：控制 flex 横轴的交叉方向对齐；center 垂直居中，flex-end 在横向容器中对齐底部。 */
+  align-items:center;
+  /* 当前 .mode-row 的 gap = 7px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:7px;
+  /* 当前 .mode-row 的 color = var(--muted)：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:var(--muted);
+  /* 当前 .mode-row 的 font-size = 12px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:12px;
+/* 结束 .mode-row 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 模式提示旁的小圆点，它是装饰，不用来判断真实模型是否连通。 */
+.status-dot {
+  /* 当前 .status-dot 的 width = 6px：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:6px;
+  /* 当前 .status-dot 的 height = 6px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+  height:6px;
+  /* 当前 .status-dot 的 background = #75a68c：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#75a68c;
+  /* 当前 .status-dot 的 border-radius = 50%：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:50%;
+/* 结束 .status-dot 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 空对话时的欢迎区，利用留白区分引导与消息内容。 */
+.welcome {
+  /* 当前 .welcome 的 padding = 83px 0 50px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:83px 0 50px;
+/* 结束 .welcome 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 欢迎区英文小标题，使用小字号、字距和颜色建立层级。 */
+.eyebrow {
+  /* 当前 .eyebrow 的 font-size = 10px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:10px;
+  /* 当前 .eyebrow 的 font-weight = 600：设置字重；较大数字通常更粗，实际可用字重由所选字体决定。 */
+  font-weight:600;
+  /* 当前 .eyebrow 的 letter-spacing = 2.5px：调整字符间距；正值拉开，负值收紧，不能用它修改实际字符。 */
+  letter-spacing:2.5px;
+  /* 当前 .eyebrow 的 color = #789180：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#789180;
+/* 结束 .eyebrow 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 主标题的响应式字号和外边距，兼顾桌面与手机。 */
+h1 {
+  /* 当前 h1 的 font-size = clamp(30px,4vw,40px)：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:clamp(30px,4vw,40px);
+  /* 当前 h1 的 line-height = 1.4：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1.4;
+  /* 当前 h1 的 letter-spacing = -1.5px：调整字符间距；正值拉开，负值收紧，不能用它修改实际字符。 */
+  letter-spacing:-1.5px;
+  /* 当前 h1 的 margin = 16px 0 18px：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:16px 0 18px;
+  /* 当前 h1 的 font-weight = 550：设置字重；较大数字通常更粗，实际可用字重由所选字体决定。 */
+  font-weight:550;
+/* 结束 h1 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 仅作用于欢迎区的说明段落，不改变真实消息的正文样式。 */
+.welcome p {
+  /* 当前 .welcome p 的 color = #7b857e：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#7b857e;
+  /* 当前 .welcome p 的 line-height = 1.9：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1.9;
+  /* 当前 .welcome p 的 font-size = 15px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:15px;
+  /* 当前 .welcome p 的 margin = 0：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:0;
+/* 结束 .welcome p 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 预设问题按钮组，默认横向排列，在窄屏下允许换行。 */
+.suggestions {
+  /* 当前 .suggestions 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 加入第三个 MCP 快捷按钮后，面板较窄时也应自动换行，避免挤出聊天区域。 */
+  flex-wrap:wrap;
+  /* 当前 .suggestions 的 gap = 10px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:10px;
+  /* 当前 .suggestions 的 margin-top = 33px：只增加顶部外边距，用于拉开预设问题组或页脚说明与上方区域。 */
+  margin-top:33px;
+/* 结束 .suggestions 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 预设问题按钮的边框、留白和文字排列。 */
+.suggestions button {
+  /* 当前 .suggestions button 的 background = #fff：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#fff;
+  /* 当前 .suggestions button 的 border = 1px solid var(--line)：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:1px solid var(--line);
+  /* 当前 .suggestions button 的 border-radius = 10px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:10px;
+  /* 当前 .suggestions button 的 color = #58675e：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#58675e;
+  /* 当前 .suggestions button 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .suggestions button 的 gap = 32px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:32px;
+  /* 当前 .suggestions button 的 padding = 13px 16px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:13px 16px;
+  /* 当前 .suggestions button 的 font-size = 13px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:13px;
+/* 结束 .suggestions button 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 预设问题按钮的悬停反馈，帮助识别可交互元素。 */
+.suggestions button:hover {
+  /* 当前 .suggestions button:hover 的 border-color = #9daf9d：只覆盖边框颜色，保留已有宽度与线型；用于 hover 或焦点状态反馈。 */
+  border-color:#9daf9d;
+  /* 当前 .suggestions button:hover 的 background = #f2f5ed：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#f2f5ed;
+/* 结束 .suggestions button:hover 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 预设按钮中装饰箭头的颜色，不改变按钮正文。 */
+.suggestions span {
+  /* 当前 .suggestions span 的 color = #8b998f：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#8b998f;
+/* 结束 .suggestions span 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 消息列表用纵向 flex 布局管理每条消息的间距。 */
+.messages {
+  /* 当前 .messages 的 padding = 28px 0 18px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:28px 0 18px;
+  /* 当前 .messages 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .messages 的 flex-direction = column：column 让 flex 子元素按纵向排列，而不是默认横向排列。 */
+  flex-direction:column;
+  /* 当前 .messages 的 gap = 27px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:27px;
+/* 结束 .messages 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 单条消息的通用宽度、字号与行高，角色样式随后覆盖局部属性。 */
+.message {
+  /* 当前 .message 的 max-width = 90%：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+  max-width:90%;
+  /* 当前 .message 的 font-size = 15px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:15px;
+  /* 当前 .message 的 line-height = 1.85：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1.85;
+/* 结束 .message 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 说话者标签使用比正文更小的字号和较弱颜色。 */
+.message-label {
+  /* 当前 .message-label 的 font-size = 11px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:11px;
+  /* 当前 .message-label 的 font-weight = 600：设置字重；较大数字通常更粗，实际可用字重由所选字体决定。 */
+  font-weight:600;
+  /* 当前 .message-label 的 color = #8b958d：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#8b958d;
+  /* 当前 .message-label 的 letter-spacing = .3px：调整字符间距；正值拉开，负值收紧，不能用它修改实际字符。 */
+  letter-spacing:.3px;
+  /* 当前 .message-label 的 margin-bottom = 7px：只设置下外边距，把说话者标签与消息正文分开。 */
+  margin-bottom:7px;
+/* 结束 .message-label 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 同时具有 message 和 user 类的同一个元素，用来右对齐用户消息。 */
+.message.user {
+  /* 当前 .message.user 的 align-self = flex-end：只调整当前 flex 子项的交叉方向对齐；用户消息用 flex-end 靠右，不改变整个列表。 */
+  align-self:flex-end;
+  /* 当前 .message.user 的 max-width = 83%：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+  max-width:83%;
+/* 结束 .message.user 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 用户消息内部的标签右对齐；空格表示后代关系，不是同一元素的多个类。 */
+.message.user .message-label {
+  /* 当前 .message.user .message-label 的 text-align = right：right 将该元素内部的行内文字右对齐；它不负责把整条消息移到右边。 */
+  text-align:right;
+/* 结束 .message.user .message-label 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 消息正文保留换行，且长链接或连续字符也能折行。 */
+.message-content {
+  /* 当前 .message-content 的 white-space = pre-wrap：pre-wrap 保留文本换行并允许自动折行；nowrap 则阻止视觉隐藏标签被换行。 */
+  white-space:pre-wrap;
+  /* 当前 .message-content 的 overflow-wrap = anywhere：anywhere 允许在超长连续字符串内断行，避免长链接或模型代码撑宽页面。 */
+  overflow-wrap:anywhere;
+/* 结束 .message-content 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 仅给用户消息正文添加浅色气泡和不对称圆角。 */
+.user .message-content {
+  /* 当前 .user .message-content 的 background = #e8eee4：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#e8eee4;
+  /* 当前 .user .message-content 的 padding = 12px 18px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:12px 18px;
+  /* 当前 .user .message-content 的 border-radius = 15px 15px 4px 15px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:15px 15px 4px 15px;
+/* 结束 .user .message-content 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 助手正文采用开放式排版，只添加很小的横向内边距。 */
+.assistant .message-content {
+  /* 当前 .assistant .message-content 的 padding = 0 2px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:0 2px;
+/* 结束 .assistant .message-content 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* Markdown 块级标签自己管理换行；用户消息仍使用原来的纯文本 pre-wrap。 */
+.assistant .markdown-body {
+  /* 防止表格、长代码的固有宽度把弹性布局中的消息撑出屏幕。 */
+  min-width:0;
+  /* 取消纯文本保留空白的规则，避免生成的 HTML 标签之间出现多余空行。 */
+  white-space:normal;
+}
+
+/* 段落、列表、引用和代码块使用一致的阅读间距。 */
+.markdown-body :is(p,ul,ol,blockquote,pre,.markdown-table) {
+  /* 第一值控制上下间距，第二值不增加横向外边距。 */
+  margin:0 0 1em;
+}
+
+/* 去掉最后一个块的下边距，避免每条消息尾部留下额外空白。 */
+.markdown-body > :last-child {
+  /* 只覆盖末尾块，消息内部段落仍保持间隔。 */
+  margin-bottom:0;
+}
+
+/* 标题保持相对正文的层级，不使用浏览器默认的过大字号。 */
+.markdown-body :is(h1,h2,h3,h4,h5,h6) {
+  /* 上下间距帮助分隔小节；em 随标题字号缩放。 */
+  margin:1.2em 0 .55em;
+  /* 标题可以比正文紧凑，但仍允许多行。 */
+  line-height:1.4;
+  /* 较小标题采用统一基础大小，下方再覆盖前三个层级。 */
+  font-size:1em;
+}
+/* 第一行直接是标题时，不额外增加消息顶部的空白。 */
+.markdown-body > :first-child { margin-top:0; }
+/* 一级标题相对正文放大，适合报告标题。 */
+.markdown-body h1 { font-size:1.55em; }
+/* 二级标题比一级更小，用于主要小节。 */
+.markdown-body h2 { font-size:1.3em; }
+/* 三级标题用于小节内部的分组。 */
+.markdown-body h3 { font-size:1.12em; }
+
+/* 原生列表保留项目符号和编号，缩进随字号变化。 */
+.markdown-body :is(ul,ol) { padding-left:1.6em; }
+/* 同级条目之间增加少量距离，便于阅读操作步骤。 */
+.markdown-body li + li { margin-top:.3em; }
+/* 嵌套列表缩小底部留白，避免每个父子项都被拉开一整行。 */
+.markdown-body li > :is(ul,ol) { margin:.35em 0 0; }
+
+/* 引用以左侧边线区分，不把它画成另一个聊天气泡。 */
+.markdown-body blockquote {
+  /* 左侧缩进为引用文字留出空间。 */
+  padding:.2em 1em;
+  /* 只显示左边线，保持轻量的阅读样式。 */
+  border-left:3px solid #b6cbbb;
+  /* 引用的颜色稍弱于正文。 */
+  color:#586c60;
+}
+/* 引用末尾段落不再重复添加底部间距。 */
+.markdown-body blockquote > :last-child { margin-bottom:0; }
+
+/* 行内代码与代码块共用本地等宽字体，不需要下载字体。 */
+.markdown-body code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+/* 行内代码用淡底色，和正文中的普通英文区分。 */
+.markdown-body :not(pre) > code {
+  /* 内边距给短代码留出少量呼吸空间。 */
+  padding:.15em .35em;
+  /* 淡底色保持与当前绿色主题一致。 */
+  background:#eaf0e7;
+  /* 小圆角只改变外观。 */
+  border-radius:4px;
+  /* 等宽字体略小，避免视觉上比正文突兀。 */
+  font-size:.9em;
+}
+/* 围栏代码保留缩进和空格；长行在块内滚动，不强制破坏代码行。 */
+.markdown-body pre {
+  /* 限制块宽度，使其跟随聊天列。 */
+  max-width:100%;
+  /* 内容超宽时只出现代码块内部滚动条。 */
+  overflow-x:auto;
+  /* 保留原始缩进、换行和连续空格。 */
+  white-space:pre;
+  /* 覆盖正文允许任意断行的继承规则。 */
+  overflow-wrap:normal;
+  /* 给代码和滚动条周围留出空间。 */
+  padding:14px 16px;
+  /* 使用淡背景强调这是代码区。 */
+  background:#eef2ea;
+  /* 边框明确代码区的边界。 */
+  border:1px solid var(--line);
+  /* 和页面现有组件保持相近圆角。 */
+  border-radius:8px;
+  /* 紧凑字体适合展示 JSON 和脚本。 */
+  font-size:.88em;
+  /* 多行代码保持适当行距。 */
+  line-height:1.6;
+}
+
+/* 表格独立滚动容器也能通过键盘聚焦。 */
+.markdown-table { max-width:100%; overflow-x:auto; }
+/* 单元格边框合并成一条线，内容较多时保持可滚动的自然宽度。 */
+.markdown-body table { border-collapse:collapse; min-width:100%; }
+/* 表头与正文采用相同的单元格留白和分隔线。 */
+.markdown-body :is(th,td) { padding:8px 12px; border:1px solid #d7dfd3; }
+/* 表头底色和默认对齐；Markdown 的列对齐通过下方固定类覆盖。 */
+.markdown-body th { background:#eaf0e7; text-align:left; }
+/* 使用样式表中的固定类，兼容禁止内联 style 的页面 CSP。 */
+.markdown-body .markdown-align-left { text-align:left; }
+/* 表头和数据单元格都支持 Markdown 的居中标记。 */
+.markdown-body .markdown-align-center { text-align:center; }
+/* 数值列可以使用右对齐。 */
+.markdown-body .markdown-align-right { text-align:right; }
+/* 链接同时使用颜色和下划线表达可点击状态。 */
+.markdown-body a { color:var(--green); text-decoration:underline; text-underline-offset:3px; }
+/* 分隔线用页面已有的边框颜色。 */
+.markdown-body hr { border:0; border-top:1px solid var(--line); margin:1.2em 0; }
+/* 图片即使有较大原始尺寸，也不能撑宽聊天列。 */
+.markdown-body img { max-width:100%; height:auto; }
+
+/* 出错消息正文使用错误色，不会改变其他历史消息。 */
+.message.error .message-content {
+  /* 当前 .message.error .message-content 的 color = #a24c39：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#a24c39;
+/* 结束 .message.error .message-content 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 等待首个回复分片时的占位文字样式，文字到达后由 JS 移除此类。 */
+.thinking {
+  /* 当前 .thinking 的 color = #8a958d：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#8a958d;
+/* 结束 .thinking 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 输入页脚在聊天列底部独立占位，不参与消息区域滚动。 */
+.composer-wrap {
+  /* 输入区连同弹出候选列表保持在消息卡片上方。 */
+  z-index: 5;
+  /* 相对定位为命令补全提供定位基准；固定占位高度由内容决定，不被消息挤压。 */
+  position:relative;
+  flex-shrink:0;
+  /* 当前 .composer-wrap 的 width = 100%：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:100%;
+  /* 当前 .composer-wrap 的 max-width = 740px：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+  max-width:740px;
+  /* 当前 .composer-wrap 的 margin = 0 auto：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:0 auto;
+  /* 当前 .composer-wrap 的 padding = 14px 0 23px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:14px 0 23px;
+  /* 当前 .composer-wrap 的 background = linear-gradient(transparent,#f8f9f5 14px)：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:linear-gradient(transparent,#f8f9f5 14px);
+/* 结束 .composer-wrap 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 错误和状态说明区域保留一定高度，减少提示出现时输入框跳动。 */
+.notice {
+  /* 当前 .notice 的 min-height = 18px：设置高度下限；100dvh 按动态视口高度计算，使页面至少填满当前可视区域。 */
+  min-height:18px;
+  /* 当前 .notice 的 margin = 0 0 8px：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:0 0 8px;
+  /* 当前 .notice 的 font-size = 12px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:12px;
+  /* 当前 .notice 的 color = #9b523b：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#9b523b;
+  /* 当前 .notice 的 line-height = 1.5：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1.5;
+/* 结束 .notice 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 输入框和发送按钮共享一个有边框的容器；内部用 flex 排列。 */
+.composer {
+  /* 当前 .composer 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .composer 的 align-items = flex-end：控制 flex 横轴的交叉方向对齐；center 垂直居中，flex-end 在横向容器中对齐底部。 */
+  align-items:flex-end;
+  /* 当前 .composer 的 gap = 12px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:12px;
+  /* 当前 .composer 的 padding = 12px 13px 12px 19px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:12px 13px 12px 19px;
+  /* 当前 .composer 的 background = #fff：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#fff;
+  /* 当前 .composer 的 border = 1px solid #dce2d7：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:1px solid #dce2d7;
+  /* 当前 .composer 的 border-radius = 16px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:16px;
+  /* 当前 .composer 的 box-shadow = 0 5px 25px #233f2d05：依次设置偏移、模糊等阴影参数；末尾八位十六进制颜色包含透明度，形成较轻外观。 */
+  box-shadow:0 5px 25px #233f2d05;
+/* 结束 .composer 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 当容器内任何控件获得焦点时改变外框，因此不必给容器自己添加键盘焦点。 */
+.composer:focus-within {
+  /* 当前 .composer:focus-within 的 border-color = #9eb8a7：只覆盖边框颜色，保留已有宽度与线型；用于 hover 或焦点状态反馈。 */
+  border-color:#9eb8a7;
+  /* 当前 .composer:focus-within 的 box-shadow = 0 0 0 3px #7498830b：依次设置偏移、模糊等阴影参数；末尾八位十六进制颜色包含透明度，形成较轻外观。 */
+  box-shadow:0 0 0 3px #7498830b;
+/* 结束 .composer:focus-within 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 原生多行输入框；高度主要由 app.js 按内容调整，CSS 提供范围和基础外观。 */
+textarea {
+  /* 当前 textarea 的 width = 100%：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:100%;
+  /* 当前 textarea 的 min-height = 30px：设置高度下限；100dvh 按动态视口高度计算，使页面至少填满当前可视区域。 */
+  min-height:30px;
+  /* 当前 textarea 的 max-height = 160px：限制输入框最高高度，超过后由输入框内部滚动而非无限推高整个页面。 */
+  max-height:160px;
+  /* 当前 textarea 的 border = 0：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:0;
+  /* 当前 textarea 的 background = transparent：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:transparent;
+  /* 当前 textarea 的 resize = none：none 禁用用户拖拽调整 textarea 尺寸；本例改由脚本根据内容自动调整。 */
+  resize:none;
+  /* 当前 textarea 的 outline = none!important：焦点轮廓不占布局空间；textarea 的 none!important 会覆盖前面的轮廓规则，输入焦点改由外层 focus-within 边框反馈。 */
+  outline:none!important;
+  /* 当前 textarea 的 line-height = 1.7：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1.7;
+  /* 当前 textarea 的 color = #263c35：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#263c35;
+  /* 当前 textarea 的 font-size = 15px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:15px;
+  /* 当前 textarea 的 padding = 3px 0：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:3px 0;
+/* 结束 textarea 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 伪元素只选择输入框的占位提示文字，不改变用户已经输入的内容。 */
+textarea::placeholder {
+  /* 当前 textarea::placeholder 的 color = #a1aaa2：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#a1aaa2;
+/* 结束 textarea::placeholder 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 发送按钮固定尺寸并避免被长输入挤扁。 */
+.send {
+  /* 当前 .send 的 flex-shrink = 0：0 禁止该 flex 子项被压缩，确保发送按钮保持固定宽度。 */
+  flex-shrink:0;
+  /* 当前 .send 的 width = 36px：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:36px;
+  /* 当前 .send 的 height = 36px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+  height:36px;
+  /* 当前 .send 的 border = 0：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:0;
+  /* 当前 .send 的 border-radius = 11px：设置圆角；单值用于四角，四个值按左上、右上、右下、左下排列。 */
+  border-radius:11px;
+  /* 当前 .send 的 background = var(--green)：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:var(--green);
+  /* 当前 .send 的 color = #fff：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#fff;
+  /* 当前 .send 的 font-size = 24px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:24px;
+  /* 当前 .send 的 line-height = 1：无单位数值是字号的倍数，字体变大时行高同比增长；1 用于紧凑的图标文字。 */
+  line-height:1;
+/* 结束 .send 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 空输入或正在回复时的发送按钮外观，功能禁用由 HTML disabled 属性控制。 */
+.send:disabled {
+  /* 当前 .send:disabled 的 background = #e7ece4：设置背景颜色或渐变；transparent 表示透明，让父级背景透出。 */
+  background:#e7ece4;
+  /* 当前 .send:disabled 的 color = #a5afa7：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#a5afa7;
+/* 结束 .send:disabled 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 页脚两段补充说明，桌面上分别靠左右排列。 */
+.composer-meta {
+  /* 当前 .composer-meta 的 display = flex：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:flex;
+  /* 当前 .composer-meta 的 justify-content = space-between：控制 flex 主轴空间分配；space-between 把首尾元素推到两端。 */
+  justify-content:space-between;
+  /* 当前 .composer-meta 的 gap = 12px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+  gap:12px;
+  /* 当前 .composer-meta 的 color = #9aa297：设置文字的前景颜色；不会改变实际文本内容，也不等于背景色。 */
+  color:#9aa297;
+  /* 当前 .composer-meta 的 font-size = 10px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+  font-size:10px;
+  /* 当前 .composer-meta 的 margin-top = 13px：只增加顶部外边距，用于拉开预设问题组或页脚说明与上方区域。 */
+  margin-top:13px;
+  /* 当前 .composer-meta 的 padding = 0 3px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:0 3px;
+/* 结束 .composer-meta 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 视觉隐藏但保留在辅助技术阅读树中的标签；不能替换为 display:none，否则标签也会消失。 */
+.sr-only {
+  /* 当前 .sr-only 的 position = absolute：sticky 让输入页脚在滚动时贴近设定边界；absolute 用于视觉隐藏标签，脱离正常布局。 */
+  position:absolute;
+  /* 当前 .sr-only 的 width = 1px：设置宽度；百分比相对包含块，px 为 CSS 像素，min(...) 会选其中较小值避免超过屏幕。 */
+  width:1px;
+  /* 当前 .sr-only 的 height = 1px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+  height:1px;
+  /* 当前 .sr-only 的 padding = 0：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+  padding:0;
+  /* 当前 .sr-only 的 margin = -1px：设置外边距；auto 常用于水平居中，负值在 sr-only 中配合裁剪把标签移出可见区域。 */
+  margin:-1px;
+  /* 当前 .sr-only 的 overflow = hidden：hidden 隐藏超出边界的可见内容；在 sr-only 中与裁剪配合，但保留标签语义。 */
+  overflow:hidden;
+  /* 当前 .sr-only 的 clip = rect(0,0,0,0)：用旧式矩形裁剪把绝对定位标签裁成不可见区域；这里只用于已有的视觉隐藏实现。 */
+  clip:rect(0,0,0,0);
+  /* 当前 .sr-only 的 white-space = nowrap：pre-wrap 保留文本换行并允许自动折行；nowrap 则阻止视觉隐藏标签被换行。 */
+  white-space:nowrap;
+  /* 当前 .sr-only 的 border = 0：按“宽度 线型 颜色”设置边框；0 移除边框，1px solid ... 形成细实线。 */
+  border:0;
+/* 结束 .sr-only 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 属性选择器匹配带 hidden 的元素，明确保证欢迎区隐藏时退出布局。 */
+[hidden] {
+  /* 当前 [hidden] 的 display = none!important：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+  display:none!important;
+/* 结束 [hidden] 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 仅当视口宽度不超过 600 CSS 像素时应用内部覆盖规则；前面的桌面样式仍是基础。 */
+@media(max-width:600px) {
+  /* 窄屏覆盖：整体应用容器，控制最大宽度、居中和从上到下的布局。 */
+  .app {
+    /* 当前 .app 的 padding = 0 20px：设置内容与边框之间的内边距；一个值用于四边，两个值为上下/左右，三个值为上/左右/下，四个值按上右下左。 */
+    padding:0 20px;
+  /* 结束 .app 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：页头横向排列品牌与新对话按钮，并在底部添加分隔线。 */
+  .header {
+    /* 当前 .header 的 height = 78px：设置明确高度；固定按钮高度让可点击区域保持稳定，输入框高度另由 JS 动态更新。 */
+    height:78px;
+  /* 结束 .header 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：主要聊天区域，与页脚共用较窄阅读宽度，并占据纵向剩余空间。 */
+  .main {
+    /* 当前 .main 的 padding-top = 23px：只设置顶部内边距；手机规则可以单独覆盖它，而不重写其他三边。 */
+    padding-top:23px;
+  /* 结束 .main 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：空对话时的欢迎区，利用留白区分引导与消息内容。 */
+  .welcome {
+    /* 当前 .welcome 的 padding-top = 68px：只设置顶部内边距；手机规则可以单独覆盖它，而不重写其他三边。 */
+    padding-top:68px;
+  /* 结束 .welcome 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：只覆盖欢迎区主标题的字距，让手机窄屏下标题更自然，不影响其他 h1。 */
+  .welcome h1 {
+    /* 当前 .welcome h1 的 letter-spacing = -1px：调整字符间距；正值拉开，负值收紧，不能用它修改实际字符。 */
+    letter-spacing:-1px;
+  /* 结束 .welcome h1 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：预设问题按钮组，默认横向排列，在窄屏下允许换行。 */
+  .suggestions {
+    /* 当前 .suggestions 的 flex-wrap = wrap：wrap 允许预设问题按钮在窄屏下换到下一行，避免横向溢出。 */
+    flex-wrap:wrap;
+  /* 结束 .suggestions 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：预设问题按钮的边框、留白和文字排列。 */
+  .suggestions button {
+    /* 当前 .suggestions button 的 gap = 20px：设置 flex/grid 子项之间的间距，不必给每个子项单独添加外边距。 */
+    gap:20px;
+  /* 结束 .suggestions button 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：输入页脚靠近可视区域底部，并用背景渐变减轻与上方消息的视觉交界。 */
+  .composer-wrap {
+    /* 当前 .composer-wrap 的 padding-bottom = max(18px,env(safe-area-inset-bottom))：只覆盖底部内边距；max(...,env(safe-area-inset-bottom)) 在手机底部安全区更大时优先避让。 */
+    padding-bottom:max(18px,env(safe-area-inset-bottom));
+  /* 结束 .composer-wrap 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：页脚两段补充说明，桌面上分别靠左右排列。 */
+  .composer-meta {
+    /* 当前 .composer-meta 的 font-size = 9px：设置字号；clamp(最小值,理想值,最大值) 会随屏幕变化，但不超出两端范围。 */
+    font-size:9px;
+  /* 结束 .composer-meta 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：窄屏仅隐藏第一段键盘快捷键说明，保留会话存储限制提示。 */
+  .composer-meta span:first-child {
+    /* 当前 .composer-meta span:first-child 的 display = none：选择布局方式：flex 用弹性布局，grid 用网格布局，none 会完全退出布局与通常的辅助技术阅读。 */
+    display:none;
+  /* 结束 .composer-meta span:first-child 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：单条消息的通用宽度、字号与行高，角色样式随后覆盖局部属性。 */
+  .message {
+    /* 当前 .message 的 max-width = 96%：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+    max-width:96%;
+  /* 结束 .message 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+  /* 窄屏覆盖：同时具有 message 和 user 类的同一个元素，用来右对齐用户消息。 */
+  .message.user {
+    /* 当前 .message.user 的 max-width = 90%：限制阅读区域或消息气泡的最大宽度，防止长行横跨整个屏幕。 */
+    max-width:90%;
+  /* 结束 .message.user 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+  }
+/* 结束 @media(max-width:600px) 的规则；后面的选择器不会继承这个代码块的声明范围。 */
+}
+
+/* 调试工作区使用左右两列；聊天与检查器互不覆盖，窄屏改为上下排列。 */
+.workspace { display:grid; grid-template-columns:minmax(360px, .9fr) minmax(460px, 1.1fr); max-width:1680px; margin:0 auto; min-height:100dvh; }
+/* 左列保留原有聊天样式，仅收紧边距，让调试内容有足够空间。 */
+.workspace .app { width:100%; padding:0 30px; min-width:0; }
+/* 右列在桌面独立滚动；不把原始 JSON 撑到整个页面外面。 */
+.debug-panel { height:100dvh; position:sticky; top:0; min-width:0; overflow:auto; border-left:1px solid var(--line); background:#f0f3ed; padding:0 25px 24px; }
+/* 面板标题与聊天页头保持相同高度，形成稳定的横向结构。 */
+.debug-header { min-height:96px; display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid var(--line); }
+/* 标题字号不抢占左侧主要聊天内容。 */
+.debug-header h2 { margin:5px 0 0; font-size:19px; font-weight:600; letter-spacing:-.5px; }
+/* 状态胶囊显示模型依赖状态，而不是只显示 HTTP 服务仍在线。 */
+.state-pill { border:1px solid #d6dfd2; color:#5e7562; font-size:11px; border-radius:20px; padding:6px 10px; white-space:nowrap; }
+/* 三标签分配同等空间，键盘和鼠标都可操作。 */
+.debug-tabs { display:flex; flex-wrap:wrap; gap:6px; padding:17px 0 0; }
+/* 标签采用原生按钮而非不可访问的 div 点击区。 */
+.debug-tabs button { flex:1; min-width:0; border:0; padding:11px 6px; border-radius:9px; background:transparent; color:#6d7b70; font-size:13px; }
+/* 当前标签有明确底色和更深文字，不只靠细微颜色变化。 */
+.debug-tabs button.selected { background:white; color:var(--green); box-shadow:0 1px 5px #253c2908; font-weight:600; }
+/* 状态错误区域不抢夺聊天输入焦点。 */
+.debug-notice { color:#a04b37; font-size:12px; margin:10px 0; white-space:pre-wrap; }
+/* 各视图由 hidden 属性切换，原有全局 hidden 规则仍然有效。 */
+.debug-view { min-width:0; }
+/* 标题与刷新按钮在同一行，长说明可换行。 */
+.section-heading { display:flex; justify-content:space-between; align-items:center; gap:10px; margin:20px 0 13px; }
+/* 小节标题保持清晰但不占用太多垂直空间。 */
+.section-heading h3 { font-size:14px; margin:0; font-weight:600; }
+/* 辅助说明用于解释进程范围和临时性。 */
+.section-heading p { margin:6px 0 0; color:#879184; font-size:11px; }
+/* 控制影响说明紧挨插件操作，不要求用户先去 README 找警告。 */
+.control-hint { font-size:12px; color:#7f8c7c; line-height:1.8; margin:0 0 15px; }
+/* 普通操作按钮与插件启停按钮区分视觉层级。 */
+.plain-button { border:1px solid #d6dfd2; background:#f8faf6; border-radius:7px; font-size:11px; padding:7px 9px; color:#61725f; }
+/* 无可导出记录时明确显示禁用状态。 */
+.plain-button:disabled { opacity:.45; }
+/* 树标题说明 Loader 的管理角色，不把它伪造为 YAML 中的配置条目。 */
+.plugin-tree-heading { display:flex; justify-content:space-between; gap:10px; margin:0 0 9px; color:#64775d; font-size:11px; }
+/* 次要提示保持柔和，主要注意力留给真实节点状态。 */
+.plugin-tree-heading span { color:#879184; }
+/* 根列表统一边框；异常深的树可以在面板内滚动，不撑宽整张网页。 */
+.plugin-list { margin:0; padding:4px 0; list-style:none; background:#fafbf8; border:1px solid #dce3d6; border-radius:12px; overflow:auto; }
+/* 每个节点包含自己的行和子列表，相对定位用于绘制分支连接线。 */
+.plugin-node { position:relative; list-style:none; }
+/* 同级节点用轻分隔线区分，避免连接线与整行重复边框抢视觉。 */
+.plugin-node + .plugin-node { border-top:1px solid #e6eadf; }
+/* 真正的子列表产生缩进和竖向连接线，层级不依赖插件名称。 */
+.plugin-children { margin:0 0 0 22px; padding:0 0 0 10px; list-style:none; border-left:1px solid #d5dfce; }
+/* 横向短线从父级竖线连到子节点，辅助快速辨认父子归属。 */
+.plugin-children > .plugin-node::before { content:''; position:absolute; top:25px; left:-10px; width:10px; border-top:1px solid #d5dfce; }
+/* 行内部左右排列，名称太长时允许换行而不挤走按钮。 */
+.plugin-row { display:flex; align-items:center; gap:8px; padding:11px 10px; }
+/* 容器行用浅色背景表达管理层，普通插件仍沿用统一信息结构。 */
+.plugin-container { background:#f0f5ec; }
+/* 展开控件与叶节点占位等宽，使同层的名称自然对齐。 */
+.plugin-disclosure,.plugin-disclosure-space { flex:0 0 24px; width:24px; height:30px; }
+/* 展开按钮与启停按钮外观不同，避免把折叠误认为停用。 */
+.plugin-disclosure { display:grid; place-items:center; padding:0; border:0; border-radius:5px; background:transparent; color:#587650; font-size:18px; cursor:pointer; }
+/* 鼠标悬停突出可操作区域，不改变插件的实际状态。 */
+.plugin-disclosure:hover { background:#e0ead8; }
+/* 键盘聚焦时给出清晰边框，轮询重绘后仍可定位当前控件。 */
+.plugin-disclosure:focus-visible,.plugin-toggle:focus-visible { outline:2px solid #668b5a; outline-offset:2px; }
+/* 信息块可收缩，长名称自动换行，不挤走右侧真实开关。 */
+.plugin-info { flex:1; min-width:0; }
+/* 插件 ID 使用等宽字，便于与配置文件逐项对照。 */
+.plugin-row strong { display:block; font:12px ui-monospace,SFMono-Regular,Consolas,monospace; color:#405c49; overflow-wrap:anywhere; }
+/* 状态与职责放在下一行，保持开关动作旁的信息完整。 */
+.plugin-row small { display:block; margin-top:5px; color:#8b9586; font-size:11px; }
+/* 徽标只表达实际状态；等待依赖使用独立颜色和“未运行”文字。 */
+.plugin-status { display:inline-block; margin-top:6px; padding:3px 6px; border-radius:5px; color:#737c70; background:#e9ede6; font-size:10px; line-height:1.5; }
+.plugin-status[data-state="active"] { color:#356240; background:#e4efdf; }
+.plugin-status[data-state="pending"] { color:#8a622a; background:#f7efdc; }
+.plugin-status[data-state="failed"] { color:#9a4840; background:#f6e7e3; }
+.plugin-row .plugin-waiting-hint { color:#8a622a; }
+/* 启停按钮尺寸稳定，避免状态切换时行布局跳动。 */
+.plugin-toggle { min-width:51px; flex-shrink:0; padding:7px 9px; border:1px solid #cbd8c7; border-radius:7px; background:#eef4e9; color:#5b7655; font-size:11px; }
+/* 已启用的开关动作是停用，使用白底降低不必要的危险暗示。 */
+.plugin-toggle.enabled { background:white; color:#70816c; }
+/* 固定的控制平面条目不能被此页面卸载。 */
+.plugin-toggle:disabled { opacity:.4; }
+/* 轮次选择器与导出按钮共用工具区。 */
+.run-toolbar { margin-top:20px; }
+/* 表单控件标签提供可读名称，与原始数据区保持间距。 */
+.run-toolbar label,.view-label { display:block; margin:0 0 7px; font-size:11px; color:#7d8b77; }
+/* 下拉选择器允许收缩，长提示词不会撑开工作区。 */
+.debug-panel select { max-width:100%; min-width:0; padding:9px 10px; border:1px solid #d7dfd1; border-radius:8px; background:#fafcf8; color:#566b50; font:inherit; font-size:12px; }
+/* 轮次选择占满可用宽度，便于选择较长的提示词摘要。 */
+#run-select,#raw-kind { width:100%; }
+/* 操作按钮换行以适应窄屏，不产生横向溢出。 */
+.run-actions { display:flex; flex-wrap:wrap; gap:6px; margin:9px 0 19px; }
+/* 数据来源说明保持可读，明确区分框架分片与 HTTP 原文。 */
+.data-description { font-size:11px; line-height:1.8; color:#86917d; margin:11px 0; }
+/* 原始内容保留换行、缩进与长字段，可滚动查看而不是截断文字。 */
+.raw-content,.timeline pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace; background:#fafcf8; border:1px solid #dce3d5; border-radius:10px; color:#4f6549; padding:15px; tab-size:2; }
+/* 桌面原始数据区限制视口高度，内部仍能查看全部内容。 */
+.raw-content { min-height:230px; max-height:calc(100dvh - 390px); overflow:auto; }
+/* 时间线每项之间留出间距，便于阅读请求边界。 */
+.timeline details { margin:8px 0; border-left:2px solid #cbd9c2; padding:0 0 0 12px; }
+/* 原生 summary 提供键盘展开；时间偏移和类型始终可见。 */
+.timeline summary { font-size:12px; color:#607759; padding:8px 0; cursor:pointer; }
+/* 大 payload 在展开项内滚动，不会把整个面板推成极长一页。 */
+.timeline pre { max-height:360px; overflow:auto; margin:3px 0 12px; font-size:10px; }
+/* 空状态文字与其他模式说明保持一致。 */
+.empty-debug { color:#87927f; font-size:12px; line-height:1.8; }
+/* 平板和手机改为上下布局，模型正文和调试面板都保留完整宽度。 */
+@media(max-width:900px) {
+  /* 去掉桌面两列，避免小屏控件挤到无法操作。 */
+  .workspace { display:block; }
+  /* 聊天仍固定一屏并在内部滚动；外层向下浏览时仍可访问下方调试面板。 */
+  .workspace .app { min-height:0; padding:0 20px; }
+  /* 调试面板进入正常文档流，用户向下滚动即可访问。 */
+  .debug-panel { position:relative; height:auto; min-height:70dvh; border-left:0; border-top:1px solid var(--line); padding:0 20px 25px; }
+  /* 手机中原始输出区域给出适合触摸滚动的高度。 */
+  .raw-content { max-height:55dvh; }
+/* 结束响应式覆盖。 */
+}
+
+/* 仿真资源与节点状态在调试栏内展示，长任务 ID 不撑宽页面。 */
+.simulation-resources { padding:12px; margin-bottom:15px; border:1px solid #d4dfce; border-radius:9px; font-size:12px; line-height:1.8; color:#50694b; overflow-wrap:anywhere; }
+/* 任务进度填满面板但不改变页面宽度。 */
+#simulation-progress { width:100%; height:14px; accent-color:#547b46; }
+/* 每个模板阶段保持清楚边界，内部节点仍按依赖推进。 */
+.simulation-group { margin:15px 0; padding:12px; border:1px solid #dce3d6; border-radius:10px; }
+/* 阶段标题区分信道、通信和链路父模块。 */
+.simulation-group h4 { margin:0 0 9px; font-size:13px; color:#54704c; }
+/* 节点行允许长依赖和状态在手机上换行。 */
+.simulation-node { margin:8px 0; padding:9px; border-left:3px solid #bac9b0; background:#f9fbf7; font-size:12px; overflow-wrap:anywhere; }
+/* 运行中与失败节点使用不同颜色，文字同时保留状态。 */
+.simulation-node[data-state="running"] { border-color:#3b8868; }
+/* 错误色只辅助表达，不替代完整错误文字。 */
+.simulation-node[data-state="failed"] { border-color:#b35c48; }
+/* 子节点附带资源、依赖与串行锁说明。 */
+.simulation-node small { display:block; margin-top:6px; color:#819078; line-height:1.6; }
+
+/* MCP 卡片按服务分组，长程序路径和 URL 可以折行。 */
+.mcp-list { display:grid; gap:14px; min-width:0; }
+/* 服务卡片与现有调试面板使用一致的颜色和边界。 */
+.mcp-card { min-width:0; padding:14px; border:1px solid #dce3d6; border-radius:10px; background:#fafbf8; }
+/* 卡片内部标题不重复增加外层小节的顶部空白。 */
+.mcp-card .section-heading { margin:0 0 10px; align-items:flex-start; }
+/* 服务名可包含较长命名空间，不能撑宽面板。 */
+.mcp-card h4 { margin:0; font-size:14px; overflow-wrap:anywhere; }
+/* 状态文字允许换行，五个标签和窄屏下也保持可读。 */
+.mcp-card .state-pill { flex-shrink:0; max-width:45%; text-align:center; }
+/* 命令只是只读说明，真正执行仍使用结构化参数。 */
+.mcp-endpoint { font:11px/1.7 ui-monospace,Consolas,monospace; overflow-wrap:anywhere; color:#64775d; }
+/* 工具定义使用原生可展开详情，不把大量 JSON 一次铺满页面。 */
+.mcp-card details { margin-top:12px; font-size:12px; overflow-wrap:anywhere; }
+/* 展开按钮支持键盘，光标提示可点击。 */
+.mcp-card summary { cursor:pointer; color:var(--green); }
+/* 子工具和所属服务的目录用缩进区分。 */
+.mcp-card details details { margin-left:10px; padding-left:8px; border-left:1px solid var(--line); }
+/* 参数 JSON 在块内滚动，保证页面高度和宽度可控。 */
+.mcp-card pre { margin-top:10px; max-height:320px; }
+/* 新建和编辑共用表单，轮询只更新上方卡片。 */
+.mcp-form { margin:24px 0 16px; padding:16px; border:1px solid #d4dfce; border-radius:10px; background:#f8faf5; min-width:0; }
+/* 表单标题保持与管理页一致的层级。 */
+.mcp-form h3 { margin:0 0 12px; font-size:14px; }
+/* 显式 label 关联输入框，文字和控件之间留出距离。 */
+.mcp-form label { display:block; margin:15px 0 6px; font-size:12px; color:#586e52; }
+/* 所有连接参数都限制在表单宽度内，包含较长 JSON 和 URL。 */
+.mcp-form :is(input:not([type="checkbox"]),textarea,select) { display:block; width:100%; max-width:100%; min-width:0; border:1px solid #cdd9c7; border-radius:7px; padding:9px 10px; color:#344e3e; background:white; font-family:inherit; font-size:12px; line-height:1.6; }
+/* JSON 文本保留缩进，允许用户按需增高。 */
+.mcp-form textarea { font:11px/1.7 ui-monospace,Consolas,monospace; resize:vertical; }
+/* 复选框不采用上方全宽输入框布局。 */
+.mcp-form .mcp-checkbox { display:flex; align-items:center; gap:8px; }
+/* 操作行在手机上自动换行。 */
+.mcp-card .run-actions,.mcp-form .run-actions { flex-wrap:wrap; }
+/* 禁用时明确表达操作正在执行。 */
+#panel-mcp button:disabled { opacity:.5; cursor:wait; }
+/* 保存和连接成功使用主题色，只有错误信息使用错误色。 */
+#mcp-notice { color:var(--green); }
+/* 同时保留错误文字，不只依赖颜色传达失败。 */
+#mcp-notice.error { color:#a04b37; }
+
+/* 一次用户提交是一轮，边线与编号让长对话中的问题和结果具有明确归属。 */
+.chat-turn { min-width:0; padding:0 0 26px; border-bottom:1px solid var(--line); }
+/* 每轮标题和状态并列，状态同时以文字表达。 */
+.turn-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 0 20px; }
+/* 标题不使用消息正文的 Markdown 层级，避免混淆模型生成的标题。 */
+.turn-heading h2 { margin:0; color:#59725f; font-size:12px; font-weight:600; }
+/* 轮次状态只表示当前回复是否结束，不等于后台仿真任务状态。 */
+.turn-state { font-size:11px; color:#7b877c; }
+/* 同一轮内仍按真实执行顺序纵向排列，用户问题靠右。 */
+.turn-entries { display:flex; flex-direction:column; gap:20px; min-width:0; }
+/* 助手回答可以使用整列空间，代码块和表格在自己的容器中滚动。 */
+.chat-turn .assistant { max-width:100%; min-width:0; }
+/* 标签中的模型步骤从正文中分离，不混入助手返回的文字。 */
+.chat-step { margin-left:9px; font-size:10px; font-weight:400; color:#8a958c; }
+/* 工具卡片与普通回答采用不同的底色、边线和角色名称。 */
+.chat-turn .tool { max-width:100%; min-width:0; }
+/* 工具详情默认折叠，连续状态查询不会将大量 JSON 铺满对话区。 */
+.chat-tool-card { min-width:0; border:1px solid #cfdccc; border-left:3px solid #8aa47c; border-radius:8px; background:#f0f4ec; }
+/* 原生 summary 支持鼠标和键盘，名称允许在手机上换行。 */
+.chat-tool-card > summary { padding:10px 12px; cursor:pointer; overflow-wrap:anywhere; font-size:12px; }
+/* 工具名保留等宽字体，便于对照右侧工具目录和时间线。 */
+.chat-tool-card > summary code { font:11px/1.6 ui-monospace,Consolas,monospace; }
+/* 状态跟随名称显示，长名称时也可自然换行。 */
+.chat-tool-state { margin-left:10px; font-size:10px; color:#647e59; white-space:nowrap; }
+/* 参数和结果放在有界限的详情内部。 */
+.chat-tool-body { padding:0 12px 12px; min-width:0; }
+/* 工具详情的小标题属于页面标签，不解释成模型回答的一部分。 */
+.chat-tool-body h3 { margin:12px 0 6px; font-size:11px; font-weight:600; }
+/* 原始返回值作为文本展示；大结果只在块内滚动，数据本身不截断。 */
+.chat-tool-body pre { margin:0; padding:10px; max-height:320px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; border:1px solid #dce5d6; border-radius:6px; background:#fafcf7; font:11px/1.7 ui-monospace,Consolas,monospace; }
+/* 完整会话事件作为第二层详情，保留内容块、错误和元数据。 */
+.chat-tool-raw { margin-top:12px; font-size:11px; color:#64775d; }
+/* 展开完整事件的按钮与外层工具卡片互相独立。 */
+.chat-tool-raw summary { cursor:pointer; margin-bottom:7px; }
+/* 简短结果直接可见，复杂结构提示用户展开详情。 */
+.chat-tool-preview { margin:7px 0 0; color:#75846f; font-size:11px; line-height:1.7; overflow-wrap:anywhere; white-space:pre-wrap; }
+/* 只有收到明确 isError 的结果才使用工具失败色，断线显示“结果未确认”。 */
+.tool[data-status="error"] .chat-tool-card { border-left-color:#ae6b52; }
+/* 错误文字和状态同时保留，颜色只是辅助。 */
+.tool[data-status="error"] .chat-tool-state,.turn-error,.chat-turn[data-status="error"] .turn-state { color:#a04b37; }
+/* 尚未结束的轮次保留一行等待说明，成功回答后隐藏。 */
+.turn-waiting { margin:16px 0 0; font-size:12px; color:#879184; overflow-wrap:anywhere; }
+/* 轮次失败不覆盖已经生成的回答或工具结果。 */
+.turn-waiting.turn-error { color:#a04b37; }
+
+/* Skill 列表、编辑器和预览各自保持独立，轮询不会覆盖草稿。 */
+.skills-list { display:grid; gap:12px; margin:14px 0; min-width:0; }
+/* 指令型技能卡片使用和现有控制面板一致的边框与背景。 */
+.skill-card { padding:14px; border:1px solid #dce3d6; border-radius:10px; background:#fafbf8; min-width:0; }
+/* 名称和状态并列，长名称可以换行。 */
+.skill-card .section-heading { margin:0 0 8px; align-items:flex-start; }
+/* Skill 名称属于页面数据，使用可断行的标题样式。 */
+.skill-card h4 { margin:0; font-size:13px; overflow-wrap:anywhere; }
+/* 使用场景是选择技能的重要信息，完整显示且支持长单词换行。 */
+.skill-description { margin:8px 0; font-size:12px; line-height:1.8; color:#536b50; overflow-wrap:anywhere; white-space:pre-wrap; }
+/* 卡片操作在手机上换行，不挤压按钮名称。 */
+.skill-card .run-actions,.skills-form .run-actions { flex-wrap:wrap; }
+/* 搜索框只筛选页面展示，不改变启用状态。 */
+.skills-search { width:100%; padding:9px 10px; border:1px solid #cdd9c7; border-radius:7px; background:#fafcf7; color:#344e3e; font:inherit; font-size:12px; }
+/* 编辑区和预览区用一致的视觉容器强调其归属。 */
+.skills-form,.skill-preview { margin:22px 0 16px; padding:16px; border:1px solid #d4dfce; border-radius:10px; background:#f8faf5; min-width:0; overflow-wrap:anywhere; }
+/* 表单标题与管理页保持同级大小。 */
+.skills-form h3 { margin:0 0 12px; font-size:14px; }
+/* 显式标签帮助理解 Markdown 文件和启用开关。 */
+.skills-form label { display:block; margin:15px 0 7px; font-size:12px; color:#586e52; }
+/* 原始 Markdown 保留缩进，支持增高，不撑宽屏幕。 */
+.skills-form textarea { width:100%; max-width:100%; min-width:0; resize:vertical; padding:12px; border:1px solid #cdd9c7; border-radius:7px; background:white; color:#344e3e; font:11px/1.7 ui-monospace,Consolas,monospace; }
+/* 只读状态仍可以选择、复制和导出完整内容。 */
+.skills-form textarea:read-only { background:#edf2e9; }
+/* 复选框与文字横向对齐。 */
+.skills-form .skills-checkbox { display:flex; align-items:center; gap:8px; }
+/* 预览使用安全 Markdown 的同一套代码块、列表和表格样式。 */
+.skill-preview { font-size:13px; line-height:1.8; white-space:normal; }
+/* 操作成功与失败分别使用文字和颜色反馈。 */
+#skills-notice { color:var(--green); }
+/* 错误不覆盖编辑器草稿。 */
+#skills-notice.error { color:#a04b37; }
+/* 修改过程中阻止重复提交，但不锁定草稿输入。 */
+#panel-skills button:disabled { opacity:.5; cursor:wait; }
+/* 六个标签在窄屏上排列成两行，避免挤压中文和英文名称。 */
+@media(max-width:600px) {
+  .debug-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .debug-tabs button { padding:10px 3px; font-size:11px; }
+}
+
+/* 命令列表贴着输入区向上展开，不挤动聊天记录；窄屏也限制在当前聊天列内。 */
+.command-completion {
+  position: absolute;
+  bottom: calc(100% - 10px);
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #dce2d7;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px #233f2d24;
+}
+/* 提示和选项分开滚动，工具较多时快捷键说明仍可见。 */
+.completion-heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 5px 12px;
+  padding: 10px 12px;
+  color: #627365;
+  background: #f4f7f1;
+  font-size: 11px;
+}
+#completion-list {
+  max-height: min(36vh, 280px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* 名称和说明允许断行，长 MCP 命名空间不会撑宽手机视口。 */
+.completion-option {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-top: 1px solid #edf0e9;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.completion-option strong { font-size: 13px; color: #254934; }
+.completion-label { display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.completion-label strong { overflow-wrap:anywhere; }
+.completion-label .completion-kind { font-size:10px; color:#71836a; }
+.completion-option .completion-detail { white-space:pre-line; overflow-wrap:anywhere; }
+.completion-option span { font-size: 11px; line-height: 1.5; color: #677264; }
+/* aria-selected 同时驱动辅助技术状态和键盘选择的视觉高亮。 */
+.completion-option[aria-selected="true"] { background: #eaf2e6; box-shadow: inset 3px 0 #4d7956; }
+
+/* 配置归属和服务依赖是两个独立视图；原生按钮保留完整键盘操作。 */
+.plugin-view-switch { display:flex; gap:6px; margin:12px 0; }
+.plugin-view-switch button,.plugin-inspect { border:1px solid #cbd8c7; border-radius:7px; padding:7px 10px; background:#fff; color:#536d50; font:inherit; font-size:11px; cursor:pointer; }
+.plugin-view-switch button[aria-pressed="true"] { background:#e4eedc; color:#315b3a; font-weight:700; }
+.plugin-inspect { flex-shrink:0; padding:7px 8px; }
+#dependency-plugin { width:100%; }
+/* 三栏关系图以当前插件为中心；每张关系卡可点击继续追踪。 */
+.dependency-graph { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; align-items:start; margin:16px 0; }
+.dependency-graph > section { min-width:0; }
+.dependency-graph h4 { margin:0 0 10px; color:#587650; font-size:12px; }
+.dependency-card,#dependency-current { min-width:0; padding:12px; margin-bottom:9px; border:1px solid #d6dfcf; border-radius:10px; background:#fafcf7; overflow-wrap:anywhere; }
+#dependency-current { background:#eaf2e3; border-color:#c1d3b9; font-size:12px; }
+.dependency-link { display:inline; padding:0; border:0; background:none; color:#315b42; text-align:left; text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; font:inherit; font-size:12px; cursor:pointer; }
+.dependency-link:focus-visible,.plugin-inspect:focus-visible,.plugin-view-switch button:focus-visible { outline:2px solid #668b5a; outline-offset:3px; }
+.dependency-service { display:grid; gap:5px; border-top:1px solid #e2e9dd; padding-top:9px; margin-top:10px; }
+.dependency-service code,#dependency-current code { font-size:11px; overflow-wrap:anywhere; }
+.dependency-service span,.dependency-service small,.dependency-path small { font-size:10px; line-height:1.6; }
+.dependency-service small { color:#7d8876; }
+.dependency-ok { color:#5a7650; }
+.dependency-warning { color:#a15d32; font-size:11px; line-height:1.6; }
+/* 间接关系单独展开并在内部滚动，避免大量子作用域把页面无限撑长。 */
+.dependency-transitive { border:1px solid #d6dfcf; border-radius:9px; padding:11px; }
+.dependency-transitive > summary { cursor:pointer; color:#536d50; font-size:12px; }
+#dependency-transitive-list { max-height:480px; overflow-y:auto; }
+.dependency-path { padding:12px 0; border-bottom:1px solid #e2e9dd; overflow-wrap:anywhere; font-size:11px; line-height:1.8; }
+.dependency-path small { display:block; }
+@media (min-width:901px) and (max-width:1199px), (max-width:600px) {
+  /* 调试栏或手机变窄后按阅读顺序排列，不产生横向页面滚动。 */
+  .dependency-graph { grid-template-columns:minmax(0,1fr); }
+}
+
+/* 依赖树中的服务说明、共享引用与缺失节点，与可启停的真实插件行分开。 */
+#plugin-tree-mode { width:100%; margin-bottom:8px; }
+.plugin-row .plugin-service-relation { color:#597751; overflow-wrap:anywhere; }
+.plugin-reference { padding:9px 12px; border-bottom:1px solid #e1e8db; overflow-wrap:anywhere; }
+.plugin-reference button { border:0; padding:0; background:none; color:#52734c; font:inherit; font-size:11px; text-align:left; text-decoration:underline; cursor:pointer; overflow-wrap:anywhere; }
+.plugin-reference small { display:block; color:#8b9586; margin-top:5px; font-size:10px; }
+.plugin-missing { padding:10px 12px; color:#996a30; background:#f8f1df; font-size:11px; overflow-wrap:anywhere; }
+/* 依赖链可比配置树深，限制窄屏的逐层缩进并允许条目自然断行。 */
+@media (max-width:600px) { .plugin-children { margin-left:5px; padding-left:5px; } .plugin-row { gap:4px; padding:9px 5px; } .plugin-disclosure,.plugin-disclosure-space { flex-basis:15px; width:15px; } }
+
+/* 附件文件名允许换行，上传按钮固定宽度，避免窄屏输入区被挤出视口。 */
+.composer textarea { min-width:0; flex:1; }
+.upload-button { flex-shrink:0; white-space:nowrap; align-self:center; padding:6px 8px; }
+.chat-attachments { display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; margin-bottom:8px; }
+.attachment-chip { display:flex; flex-wrap:wrap; align-items:center; gap:7px; padding:8px 10px; background:#eef3e9; border:1px solid #dce5d5; border-radius:9px; font-size:11px; overflow-wrap:anywhere; }
+.attachment-chip .file-download,.attachment-chip > span:first-child { flex:1; min-width:100px; }
+.file-download { color:#2f6650; text-decoration:underline; overflow-wrap:anywhere; }
+.file-state { color:#6e7b69; }
+.file-error { color:#a24c39; }
+.message-attachments { display:flex; flex-direction:column; gap:5px; margin-top:8px; font-size:12px; }
+.files-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+.work-file { display:flex; flex-direction:column; align-items:flex-start; gap:7px; padding:13px; border:1px solid #dce5d5; background:#fafbf7; border-radius:10px; min-width:0; }
+.work-file code { font-size:10px; color:#75816e; overflow-wrap:anywhere; max-width:100%; }
+.file-dragover .composer { outline:2px dashed #4c7b5a; outline-offset:4px; }
+#files-root { overflow-wrap:anywhere; }
+@media (max-width:600px) { .composer { gap:7px; padding-left:10px; } .upload-button { font-size:11px; padding:6px; } }
+
+/* 左侧历史栏默认展开；桌面为聊天留出空间，窄屏使用遮罩抽屉。 */
+.header-brand { display:flex; align-items:center; gap:14px; min-width:0; }
+.history-toggle { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; border:1px solid var(--line); border-radius:8px; padding:8px 10px; background:#fff; color:var(--green); font:inherit; font-size:12px; }
+.history-toggle[aria-expanded="true"] { background:#eaf2e3; border-color:#8cbda9; }
+.session-history { position:fixed; inset:0 auto 0 0; z-index:40; width:280px; max-width:calc(100vw - 40px); height:100dvh; display:flex; flex-direction:column; border-right:1px solid var(--line); background:#f6f8f2; box-shadow:4px 0 20px #263c350a; }
+.history-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-shrink:0; min-height:80px; padding:0 18px; border-bottom:1px solid var(--line); }
+.history-header h2 { margin:0; font-size:16px; font-weight:600; }
+#session-current { color:var(--muted); margin:14px 18px 0; font-size:12px; overflow-wrap:anywhere; }
+.history-body { min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:0 18px 18px; }
+.history-body .section-heading { gap:12px; align-items:center; }
+.history-body .section-heading button { flex-shrink:0; white-space:nowrap; }
+.history-body .section-heading p { font-size:12px; color:var(--muted); margin:0; }
+.sessions-list { display:grid; gap:8px; }
+.session-row { position:relative; min-width:0; }
+.session-row .session-item { width:100%; padding-right:58px; }
+.session-delete { position:absolute; right:8px; top:8px; padding:6px; border:0; border-radius:5px; color:#9b4e3b; background:transparent; font:inherit; font-size:11px; }
+.session-delete:hover:not(:disabled) { background:#f8e9e3; }
+.session-item { display:flex; flex-direction:column; gap:5px; padding:10px 12px; text-align:left; background:#fff; color:inherit; border:1px solid var(--line); border-radius:8px; min-width:0; }
+.session-item strong { font-size:13px; overflow-wrap:anywhere; }
+.session-item span { font-size:11px; color:var(--muted); }
+.session-item:hover,.session-item[aria-pressed="true"] { background:#f1f7f1; border-color:#8cbda9; }
+.history-backdrop { position:fixed; inset:0; z-index:39; width:100%; height:100dvh; border:0; border-radius:0; background:#172b2559; }
+/* 宽屏可同时操作侧栏、聊天与检查器；窄屏保持聊天原宽度。 */
+@media(min-width:1200px) { body.history-open { padding-left:280px; } }
+@media(max-width:1199px) { body.history-open { overflow:hidden; } }
+@media(max-width:600px) {
+  .header-brand { gap:9px; }
+  .history-toggle { padding:7px 8px; }
+  /* 窄屏为较长的中文品牌留出空间，按钮必要时换行，避免遮挡或横向溢出。 */
+  .header { height:auto; min-height:78px; flex-wrap:wrap; gap:8px; padding:12px 0; }
+  .brand { gap:8px; font-size:16px; white-space:nowrap; }
+}

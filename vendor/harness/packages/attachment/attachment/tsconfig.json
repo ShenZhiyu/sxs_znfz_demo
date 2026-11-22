@@ -1,0 +1,28 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/admission.ts",
+    "src/error.ts",
+    "src/types.ts",
+    "src/brand.ts",
+    "src/request-projection.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../util/brand"
+    }
+  ]
+}

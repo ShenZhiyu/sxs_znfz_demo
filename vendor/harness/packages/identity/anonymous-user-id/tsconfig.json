@@ -1,0 +1,20 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../util/brand"
+    },
+    {
+      "path": "../../util/home-paths"
+    }
+  ]
+}

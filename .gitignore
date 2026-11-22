@@ -1,0 +1,15 @@
+# 忽略本地 profile、启动日志和验证截图等运行产物；这些文件由启动器生成，不是应逐行维护的教学源码。
+.dsh/
+# 忽略安装依赖目录；本 demo 独立安装 npm 依赖，依赖产物不应提交到项目源码中。
+node_modules/
+# 忽略本地环境配置文件，避免把真实 API Key 等部署值混入源码版本。
+.env
+# 忽略 TypeScript 增量检查可能生成的缓存；星号匹配任意前缀，缓存可以重新生成。
+*.tsbuildinfo
+
+# 框架类型声明由 npm install 或 npm run build 生成，可从随项目提供的源码重建。
+vendor/harness/**/lib/
+
+.env.*
+!.env.example
+work/

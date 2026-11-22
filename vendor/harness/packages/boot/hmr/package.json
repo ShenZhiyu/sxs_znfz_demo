@@ -1,0 +1,39 @@
+{
+  "name": "@deepseek-ai/dsh-hmr",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Coordinated module and profile configuration hot reload",
+  "type": "module",
+  "license": "MIT",
+  "author": "Shigma <shigma10826@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/boot/hmr"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/cordis-plugin-include": "1.0.10",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.6",
+    "@deepseek-ai/cordis-plugin-timer": "1.1.7",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-cmdline": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "@babel/code-frame": "^7.29.0",
+    "chokidar": "5.0.0",
+    "esbuild": "^0.28.2",
+    "node-addon-require-builtin": "^0.1.9",
+    "picomatch": "^4.0.7"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

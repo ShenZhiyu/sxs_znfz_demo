@@ -1,0 +1,51 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/connection.ts",
+    "src/server-context.ts",
+    "src/transport.ts",
+    "src/tools.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../core/tools"
+    },
+    {
+      "path": "../../core/scope"
+    },
+    {
+      "path": "../../subprocess/subprocess"
+    },
+    {
+      "path": "../../util/timeout"
+    },
+    {
+      "path": "../../util/http-proxy"
+    },
+    {
+      "path": "../mcp-resources"
+    },
+    {
+      "path": "../../core/system-prompt"
+    }
+  ]
+}

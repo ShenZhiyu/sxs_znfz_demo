@@ -1,0 +1,33 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictFunctionTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/context.ts",
+    "src/events.ts",
+    "src/fiber.ts",
+    "src/registry.ts",
+    "src/utils.ts",
+    "src/reflect.ts",
+    "src/logger.ts",
+    "src/service.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../cosmokit"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@deepseek-ai/dsh-util-crypto",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Zero-dependency browser-safe UUID and byte-encoding helpers",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/util/crypto"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {},
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

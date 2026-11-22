@@ -1,0 +1,26 @@
+{
+  "name": "@deepseek-ai/dsh-lazy-require",
+  "version": "0.2.1-rc.2",
+  "description": "Caller-relative, success-cached lazy loading for CommonJS-compatible Host dependencies",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/util/lazy-require"
+  },
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5"
+  }
+}

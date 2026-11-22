@@ -1,0 +1,30 @@
+{
+  "name": "@deepseek-ai/dsh-storage-domain",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Domain data form (ctx.storage.domain): schema-validated, event-emitting KV domains over storage backends for the DeepSeek Harness",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/storage/storage-domain"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-storage": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "zod": "4.4.3"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

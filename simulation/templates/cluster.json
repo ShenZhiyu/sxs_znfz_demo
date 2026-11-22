@@ -1,0 +1,12 @@
+{
+  "id": "local-demo-cluster",
+  "mode": "simulated-quota",
+  "capacity": { "cpu": 16, "memoryGb": 32 },
+  "snapshotTtlMs": 30000,
+  "leaseTtlMs": 30000,
+  "scales": {
+    "small": { "resources": { "cpu": 4, "memoryGb": 8 }, "maxParallel": 3, "sampleBits": 12000, "packetTrials": 2000 },
+    "medium": { "resources": { "cpu": 8, "memoryGb": 16 }, "maxParallel": 4, "sampleBits": 60000, "packetTrials": 10000 },
+    "large": { "resources": { "cpu": 12, "memoryGb": 24 }, "maxParallel": 4, "sampleBits": 180000, "packetTrials": 30000 }
+  }
+}

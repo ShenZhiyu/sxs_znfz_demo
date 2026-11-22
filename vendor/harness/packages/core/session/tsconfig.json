@@ -1,0 +1,44 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/types.ts",
+    "src/surface.ts",
+    "src/known-event-types.ts",
+    "src/request-header.ts",
+    "src/tool-history.ts",
+    "src/fork.ts",
+    "src/repair.ts",
+    "src/preparation.ts",
+    "src/seq-ranges.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../util/brand"
+    },
+    {
+      "path": "../../util/values"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../core/scope"
+    },
+    {
+      "path": "../../typert/protocol"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@deepseek-ai/dsh-http-proxy",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Process-wide outbound HTTP proxy policy for DeepSeek Harness: resolve it from the launch environment and install it as undici's global dispatcher",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/util/http-proxy"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "undici": "8.11.2"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

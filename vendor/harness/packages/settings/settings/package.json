@@ -1,0 +1,39 @@
+{
+  "name": "@deepseek-ai/dsh-settings",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Abstract user-settings seam (ctx.settings) for the DeepSeek Harness",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/settings/settings"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/cordis-plugin-loader": "1.0.6",
+    "@deepseek-ai/cosmokit": "1.8.6",
+    "@deepseek-ai/dsh-app-boot": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-config-editor": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-util-values": "0.2.1-rc.2",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "yaml": "^2.8.1"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

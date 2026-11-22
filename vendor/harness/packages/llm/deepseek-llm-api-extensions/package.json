@@ -1,0 +1,31 @@
+{
+  "name": "@deepseek-ai/dsh-deepseek-llm-api-extensions",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Additive request-field registry for the official DeepSeek LLM API adapter",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/llm/deepseek-llm-api-extensions"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

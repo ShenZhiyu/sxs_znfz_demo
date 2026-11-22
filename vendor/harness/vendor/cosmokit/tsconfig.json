@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/array.ts",
+    "src/misc.ts",
+    "src/types.ts",
+    "src/volatile.ts",
+    "src/string.ts",
+    "src/time.ts"
+  ],
+  "include": []
+}

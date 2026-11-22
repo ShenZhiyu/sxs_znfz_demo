@@ -1,0 +1,198 @@
+{
+  "id": "underwater-link",
+  "version": 1,
+  "title": "水下声学通信链路演示",
+  "procedure": [
+    "plan",
+    "inspect",
+    "reserve",
+    "submit"
+  ],
+  "worker": "scripts/simulation-node.mjs",
+  "demoPacingMs": 1200,
+  "groups": [
+    {
+      "id": "scenario",
+      "title": "场景准备",
+      "parentId": null
+    },
+    {
+      "id": "channel",
+      "title": "信道仿真",
+      "parentId": null
+    },
+    {
+      "id": "communication",
+      "title": "通信仿真",
+      "parentId": null
+    },
+    {
+      "id": "link",
+      "title": "链路仿真",
+      "parentId": null
+    }
+  ],
+  "defaults": {
+    "distanceM": 1000,
+    "carrierKhz": 12,
+    "bandwidthHz": 4000,
+    "sourceLevelDb": 140,
+    "noisePsdDb": 45,
+    "soundSpeedMps": 1500,
+    "depthM": 100,
+    "relativeSpeedMps": 0.5,
+    "packetBits": 256,
+    "seed": 42
+  },
+  "nodes": [
+    {
+      "id": "scenario",
+      "title": "场景参数准备",
+      "group": "scenario",
+      "task": "scenario",
+      "dependsOn": [],
+      "resources": {
+        "cpu": 1,
+        "memoryGb": 1
+      }
+    },
+    {
+      "id": "propagation",
+      "title": "传播损失与时延",
+      "group": "channel",
+      "task": "propagation",
+      "dependsOn": [
+        "scenario"
+      ],
+      "serialGroup": "acoustic-solver",
+      "resources": {
+        "cpu": 2,
+        "memoryGb": 2
+      }
+    },
+    {
+      "id": "multipath",
+      "title": "简化多径与多普勒",
+      "group": "channel",
+      "task": "multipath",
+      "dependsOn": [
+        "scenario"
+      ],
+      "serialGroup": "acoustic-solver",
+      "resources": {
+        "cpu": 2,
+        "memoryGb": 2
+      }
+    },
+    {
+      "id": "noise",
+      "title": "环境噪声功率",
+      "group": "channel",
+      "task": "noise",
+      "dependsOn": [
+        "scenario"
+      ],
+      "resources": {
+        "cpu": 1,
+        "memoryGb": 1
+      }
+    },
+    {
+      "id": "channel-summary",
+      "title": "汇合信道结果",
+      "group": "channel",
+      "task": "channel-summary",
+      "dependsOn": [
+        "propagation",
+        "multipath",
+        "noise"
+      ],
+      "resources": {
+        "cpu": 1,
+        "memoryGb": 1
+      }
+    },
+    {
+      "id": "comm-qpsk",
+      "title": "QPSK 比特仿真",
+      "group": "communication",
+      "task": "comm-qpsk",
+      "dependsOn": [
+        "channel-summary"
+      ],
+      "resources": {
+        "cpu": 2,
+        "memoryGb": 2
+      }
+    },
+    {
+      "id": "comm-bpsk",
+      "title": "BPSK 比特仿真",
+      "group": "communication",
+      "task": "comm-bpsk",
+      "dependsOn": [
+        "channel-summary"
+      ],
+      "resources": {
+        "cpu": 2,
+        "memoryGb": 2
+      }
+    },
+    {
+      "id": "link-budget",
+      "title": "链路预算与调制比较",
+      "group": "link",
+      "task": "link-budget",
+      "dependsOn": [
+        "comm-qpsk",
+        "comm-bpsk",
+        "channel-summary"
+      ],
+      "resources": {
+        "cpu": 1,
+        "memoryGb": 1
+      }
+    },
+    {
+      "id": "link-monte-carlo",
+      "title": "分组投递蒙特卡洛",
+      "group": "link",
+      "task": "link-monte-carlo",
+      "dependsOn": [
+        "link-budget"
+      ],
+      "resources": {
+        "cpu": 2,
+        "memoryGb": 2
+      }
+    },
+    {
+      "id": "report",
+      "title": "结果报告",
+      "group": "link",
+      "task": "report",
+      "dependsOn": [
+        "link-budget",
+        "link-monte-carlo",
+        "channel-summary"
+      ],
+      "resources": {
+        "cpu": 1,
+        "memoryGb": 1
+      }
+    }
+  ],
+  "targets": {
+    "channel": [
+      "channel-summary"
+    ],
+    "communication": [
+      "comm-qpsk",
+      "comm-bpsk"
+    ],
+    "link": [
+      "report"
+    ]
+  },
+  "workerTemplate": "simulation/templates/run-node.mjs.tpl"
+}

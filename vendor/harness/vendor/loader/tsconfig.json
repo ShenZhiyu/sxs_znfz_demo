@@ -1,0 +1,36 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "noImplicitAny": false,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noImplicitOverride": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/internal.ts",
+    "src/config/entry.ts",
+    "src/config/group.ts",
+    "src/config/tree.ts",
+    "src/config/utils.ts",
+    "src/config/diff.ts",
+    "src/config/isolate.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../cosmokit"
+    },
+    {
+      "path": "../cordis"
+    },
+    {
+      "path": "../schemastery"
+    }
+  ]
+}

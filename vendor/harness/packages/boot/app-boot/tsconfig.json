@@ -1,0 +1,60 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/profile-context.ts",
+    "src/profile.ts",
+    "src/plugin-compatibility.ts",
+    "src/profile-compatibility.ts",
+    "src/profile-resolution/legacy-links.ts",
+    "src/profile-sanitize.ts",
+    "src/profile-plugins.ts",
+    "src/compatibility-preflight.ts",
+    "src/package-meta.ts",
+    "src/profile-resolution/resolver.ts",
+    "src/profile-resolution/service.ts",
+    "src/official-bundles.ts",
+    "src/official-bundle-packages.ts",
+    "src/official-bundles.generated.ts",
+    "src/config-schema/index.ts",
+    "src/config-schema/collect.ts",
+    "src/config-schema/document.ts",
+    "src/config-schema/projector.ts",
+    "src/config-schema/types.ts",
+    "src/config-schema/native.ts",
+    "src/config-schema/pattern.ts",
+    "src/profile-resolution/worker-bootstrap.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/loader"
+    },
+    {
+      "path": "../../../vendor/include"
+    },
+    {
+      "path": "../../../vendor/group"
+    },
+    {
+      "path": "../../util/launch-environment"
+    },
+    {
+      "path": "../../util/home-paths"
+    },
+    {
+      "path": "../../util/package-manifest"
+    },
+    {
+      "path": "../../util/atomic-write"
+    }
+  ]
+}

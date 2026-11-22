@@ -1,0 +1,48 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/archive-admission.ts",
+    "src/types.ts",
+    "src/runtime-types.ts",
+    "src/projection.ts",
+    "src/consumed-work.ts",
+    "src/model-selection.ts",
+    "src/dispatch.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cosmokit"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../core/scope"
+    },
+    {
+      "path": "../../llm/llm"
+    },
+    {
+      "path": "../../core/session"
+    },
+    {
+      "path": "../../session/session-projection"
+    },
+    {
+      "path": "../../core/system-prompt"
+    },
+    {
+      "path": "../../typert/protocol"
+    },
+    {
+      "path": "../../workspace/workspace"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@deepseek-ai/dsh-atomic-write",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Zero-dependency atomic file replacement: exclusive-create random-suffix temp + rename carrying the caller-stated permissions (writeFileAtomic)",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/util/atomic-write"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {},
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@deepseek-ai/dsh-host-plugin-inventory",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Read-only Remote projection of current Cordis Loader plugin state",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/host/plugin-inventory"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-brand": "0.2.1-rc.2",
+    "@deepseek-ai/dsh-package-manifest": "0.2.1-rc.2"
+  }
+}

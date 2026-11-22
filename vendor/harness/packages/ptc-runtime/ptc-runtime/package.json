@@ -1,0 +1,27 @@
+{
+  "name": "@deepseek-ai/dsh-ptc-runtime",
+  "version": "0.2.1-rc.2",
+  "private": true,
+  "description": "Abstract PTC execution seam (ctx.ptcRuntime) for the DeepSeek Harness",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/ptc-runtime/ptc-runtime"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./src/*": "./src/*",
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-sandbox": "0.2.1-rc.2"
+  },
+  "main": "./src/index.ts",
+  "types": "./lib/types/index.d.ts"
+}

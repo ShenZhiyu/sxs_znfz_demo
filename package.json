@@ -1,0 +1,55 @@
+{
+  "name": "dsh-secondary-development-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "显式加载七个核心插件的最小终端与 Web 对话 Agent",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "demo": "node scripts/run.mjs demo",
+    "web": "node scripts/run.mjs web",
+    "web:smoke": "node scripts/web-smoke.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "config": "node scripts/run.mjs config",
+    "config:web": "node scripts/run.mjs config-web",
+    "typecheck": "node scripts/run.mjs typecheck",
+    "debug:smoke": "node scripts/debug-smoke.mjs",
+    "build": "tsc -b vendor/harness/tsconfig.json",
+    "prepare": "npm run build",
+    "standalone:smoke": "node scripts/standalone-smoke.mjs",
+    "mcp:smoke": "node scripts/mcp-smoke.mjs",
+    "mcp:management:smoke": "node scripts/mcp-management-smoke.mjs",
+    "skills:smoke": "node scripts/skills-smoke.mjs",
+    "simulation": "node scripts/simulation-workflow.mjs",
+    "simulation:test": "node --test simulation/workflow.spec.mjs",
+    "simulation:smoke": "node scripts/simulation-smoke.mjs",
+    "bash:smoke": "node scripts/bash-smoke.mjs",
+    "files:smoke": "node scripts/files-smoke.mjs",
+    "sessions:smoke": "node scripts/sessions-smoke.mjs"
+  },
+  "workspaces": [
+    "vendor/harness/vendor/*",
+    "vendor/harness/packages/*/*",
+    "vendor/harness/apps/*"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.2.0",
+    "js-yaml": "4.3.2",
+    "markdown-it": "15.0.3",
+    "tsx": "^4.23.13",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.2.0",
+    "@types/babel__code-frame": "^7.27.0",
+    "@types/compression": "^1.8.1",
+    "@types/js-yaml": "^4.0.9",
+    "@types/negotiator": "^0.6.5",
+    "@types/node": "^22.20.1",
+    "@types/picomatch": "^4.0.3",
+    "@types/semver": "^7.8.0",
+    "typescript": "^6.0.3"
+  }
+}

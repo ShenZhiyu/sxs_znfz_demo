@@ -1,0 +1,39 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "emitDeclarationOnly": true
+  },
+  "files": [
+    "src/index.ts",
+    "src/watch-config.ts",
+    "src/error.ts",
+    "src/package-manifest.ts",
+    "src/module-files.ts"
+  ],
+  "include": [],
+  "references": [
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../../vendor/loader"
+    },
+    {
+      "path": "../../../vendor/include"
+    },
+    {
+      "path": "../../../vendor/timer"
+    },
+    {
+      "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../app-boot"
+    },
+    {
+      "path": "../cmdline"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+# 保留七个核心插件和模型适配器，禁用终端入口，再挂载 Web 入口。
+# 基础配置中声明终端入口；Web overlay 通过此 ID 将它禁用。
+- id: minimal-chat
+  # 按上方 ID 禁用原终端入口；不是卸载七个核心插件，也不是关闭真实模型适配器。
+  disabled: true
+
+# 声明 patch 的插入操作；其数组中的每个条目都会加入当前 profile 插件树，不是普通业务配置字段。
+- insert:
+    # 官方 JSONL 后端：保存完整会话事件，由 AgentLoop 负责写入和恢复。
+    - id: session-persistence-jsonl
+      name: '@deepseek-ai/dsh-session-persistence-jsonl'
+      config:
+        root: !!js process.env.DSH_DEMO_SESSION_DIR
+        # 使用可直接阅读的 JSONL，便于学习；保留官方校验与跨进程写锁。
+        compression: none
+    # 技能注册、目录投影、调用权限和 /技能名 注入均由官方插件负责。
+    - id: skill
+      name: '@deepseek-ai/dsh-skill'
+    - id: skill-filesystem
+      # 适配层复用官方 FileSystemSkillProvider，额外应用网页保存的逐技能启停状态。
+      name: './src/skill-filesystem.ts'
+      config:
+        # 演示只发现明确配置的本地目录，不扫描当前机器的用户技能目录。
+        includeDefaultRoots: false
+        customSkillDirs:
+          - !!js process.env.DSH_DEMO_SKILL_DIR ?? '.dsh/local-skills'
+          # 随项目提供的技能共用目录，后续新增子目录也会自动发现。
+          - 'skills'
+        watch: true
+    - id: tool-skill
+      name: '@deepseek-ai/dsh-tool-skill'
+
+    # 新增通用 HTTP 服务，它只负责本机监听和路由分发，不理解 Agent 对话内容。
+    - id: webserver
+      # 复用上游 HTTP 服务包，不必在入口里另写 socket 监听和关闭逻辑。
+      name: '@deepseek-ai/dsh-host-webserver'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 只绑定 IPv4 回环接口，浏览器应使用启动日志中的地址访问。
+        host: 127.0.0.1
+        # 环境变量是字符串，Number 将其转为端口数值；0 让 OS 分配空闲端口，未设置则用 3080。
+        port: !!js Number(process.env.DSH_DEMO_PORT ?? 3080)
+
+    # 模拟提供方独立依赖 llm，使核心服务停止后仍能从控制页重新启用。
+    - id: offline-provider
+      # 此插件只注册模拟路由，不负责显示界面。
+      name: './src/offline-provider.ts'
+      # 真实模式不注册模拟路由，避免混淆当前模型来源。
+      disabled: !!js process.env.DSH_DEMO_OFFLINE !== '1'
+
+    # 为独立网页入口指定条目 ID，配置与终端入口采用相同模型字段。
+    - id: minimal-web
+      # 加载提供页面、会话 API 和 SSE 的入口模块；该模块通过 inject 等待 webServer 就绪。
+      name: './src/web-plugin.ts'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 将环境中的字符串开关转换成真正布尔值，供 Config.boolean 校验和入口分支判断。
+        offline: !!js process.env.DSH_DEMO_OFFLINE === '1'
+        # 下面缩进内容是一个 JS 表达式；>- 将文本折叠成一行并去掉尾换行，用于选择适配器路由。
+        provider: !!js >-
+          /* 三元表达式先判断离线开关，再只取其中一侧的路由或模型值；?? 只为缺失的模型设置后备值。 */ process.env.DSH_DEMO_OFFLINE === '1' ? 'demo-offline' : 'deepseek-official'
+        # 下面是选择模型 ID 的 JS 表达式；离线用 echo，真实模式优先 DSH_MODEL，否则用本例默认值。
+        model: !!js >-
+          /* 三元表达式先判断离线开关，再只取其中一侧的路由或模型值；?? 只为缺失的模型设置后备值。 */ process.env.DSH_DEMO_OFFLINE === '1' ? 'echo' : (process.env.DSH_MODEL ?? 'deepseek-flash')

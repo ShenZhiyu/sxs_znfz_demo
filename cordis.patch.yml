@@ -1,0 +1,161 @@
+# 完整的最小组合：7 个核心插件 + MCP 工具桥接 + 可选的真实模型接入 + 对话入口。
+# 不继承任何官方 bundle；Cordis 自动等待 inject 依赖就绪。
+# 声明 patch 的插入操作；其数组中的每个条目都会加入当前 profile 插件树，不是普通业务配置字段。
+- insert:
+    # 1. 模型调用与适配器注册。
+    # 给模型运行时条目一个稳定 ID；后续 patch 以 ID 定位，ID 不等同于 npm 包名。
+    - id: llm
+      # 加载模型运行时包，提供 ctx.llm，用来注册适配器和分发模型请求。
+      name: '@deepseek-ai/dsh-llm'
+
+    # 2. 内存会话历史。
+    # 给会话服务条目命名，负责保存本进程的会话与事件。
+    - id: session
+      # 加载内存会话服务；没有额外持久化后端时，重启不会恢复历史。
+      name: '@deepseek-ai/dsh-session'
+
+    # 3. 从会话事件派生收件箱等状态。
+    # 声明会话投影注册表条目；投影把事件记录折叠成收件箱等当前状态。
+    - id: session-projection
+      # 加载供 AgentLoop 使用的投影服务；它不是另一个模型或聊天窗口。
+      name: '@deepseek-ai/dsh-session-projection'
+
+    # 4. 系统提示词。
+    # 给系统提示词服务指定 ID，下面 config 只属于此条目。
+    - id: system-prompt
+      # 加载系统提示词与工具定义的组装服务，供每次模型请求使用。
+      name: '@deepseek-ai/dsh-system-prompt'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 不自动附加 Harness 身份说明，让最小示例的提示词保持简洁。
+        includeHarnessIdentity: false
+        # 关闭可选运行时上下文段；必需的业务上下文仍可由框架按其规则处理。
+        includeRuntimeContext: false
+        # 提供系统角色说明；修改此文字影响后续模型请求的行为，不改变网页标题。
+        personaPrefix: '你是一个友好的中文对话助手。'
+
+    # 5. AgentLoop 的必需依赖；业务工具通过下面的 MCP 客户端注册。
+    # 注册工具运行时，AgentLoop 和 MCP 客户端都把它作为必需依赖。
+    - id: tools
+      # 加载工具执行服务；有服务不代表已经注册文件、终端或搜索工具。
+      name: '@deepseek-ai/dsh-tools'
+
+    # 6. Agent 注册表和创建接口。
+    # 给 Agent 注册表条目命名；消费者通过它的公开 API 创建或查找 Agent。
+    - id: agent
+      # 加载 ctx.agents；它需要后面的 AgentLoop 提供实际创建与驱动工厂。
+      name: '@deepseek-ai/dsh-agent'
+
+    # 7. 模型请求、回复记录和轮次调度。
+    # 声明实际驱动 Agent 轮次的核心插件。
+    - id: agent-loop
+      # 加载模型请求、流响应、工具执行和历史记录的循环实现。
+      name: '@deepseek-ai/dsh-agent-loop'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 不在 YAML 启动时自动创建 Agent；由终端入口或 Web 请求通过 ctx.agents.create 按需创建。
+        agents: []
+
+    # 模型接入：离线模式禁用，由入口直接注册模拟适配器。
+    # 为真实模型适配器指定可定位的条目 ID，它不计入七个通用核心服务。
+    - id: deepseek-api-key
+      # 加载上游提供的 DeepSeek Messages 适配器和 API Key 认证逻辑，不是任意 Chat Completions 协议。
+      name: '@deepseek-ai/dsh-llm-deepseek-api-key'
+      # !!js 让启动器执行表达式；离线环境值为字符串 1 时禁用真实适配器，不需要密钥。
+      disabled: !!js process.env.DSH_DEMO_OFFLINE === '1'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 告诉适配器从哪个环境变量名解析凭据；这里是名称，不是真实密钥本身。
+        apiKeyEnv: DEEPSEEK_API_KEY
+        # 本例关闭模型思考模式，保持文字对话配置直观；这是字符串配置值。
+        thinking: disabled
+        # 对齐官方模型元数据：1M 总上下文、384K 单次最大输出（2026-10-21 核对）。
+        # https://api-docs.deepseek.com/api/list-models/
+        # 输出额度包含正文和工具调用参数；不再使用短对话演示的 2048 token 限制。
+        maxTokens: 393216
+        # 未在下面目录中列出的模型 ID 使用此容量后备值，例如兼容名称 deepseek-v4-flash。
+        defaultContextWindow: 1048576
+        # 已知模型的 contextWindow 优先于后备值，必须同时明确配置才能覆盖框架旧目录。
+        models:
+          - id: deepseek-flash
+            name: DeepSeek-V4.1-Flash
+            contextWindow: 1048576
+            maxTokens: 393216
+            # 保留官方 Flash 目录原有的图片输入和历史中更新能力。
+            inputModalities: ['text', 'image']
+            systemPromptUpdate: in-history
+            toolUpdate: addition-only
+          # 保留原目录中的 Pro 条目，终端和 Web 仍可通过 DSH_MODEL 选择。
+          - id: deepseek-v4-pro
+            name: DeepSeek-V4-Pro
+            contextWindow: 1048576
+            maxTokens: 393216
+
+    # MCP 是附加能力：连接本机服务，把远端工具注册到同一个 ctx.tools。
+    - id: mcp-demo
+      # 使用已复制到本项目的官方 MCP 客户端；无需相邻仓库。
+      name: '@deepseek-ai/dsh-mcp-client'
+      # 每个 MCP 条目连接一个服务；可以复制此条目并使用不同 serverName。
+      config:
+        # 模型看到的工具名为 mcp__demo__add，避免多个服务的 add 重名。
+        serverName: demo
+        # stdio 表示由 SDK 启动服务子进程，以标准输入输出传输协议。
+        transport: stdio
+        # 使用当前 Node 的绝对路径，避免 PATH 中找不到 node。
+        command: !!js process.execPath
+        # cwd 由启动脚本固定为 demo 根目录，因此这里的服务脚本可以随项目一起移动。
+        args: ['scripts/mcp-server.mjs']
+        # 只在本项目根目录启动示例服务，不读取相邻仓库。
+        cwd: !!js process.cwd()
+        # 显式额外环境为空；SDK 从经过凭据清理的父进程环境启动服务。
+        env: {}
+        # 单次工具请求超过十秒即失败，避免对话无限等待。
+        toolCallTimeoutMs: 10000
+        # 本机示例应成功连接；连接失败会在插件状态和启动日志中明确显示。
+        failOnStartupError: true
+
+    # 两个入口共用官方工作目录与本地 Bash 能力；不额外注册模型文件读写工具。
+    - id: fs-local
+      name: '@deepseek-ai/dsh-fs-local'
+    - id: working-directory
+      name: '@deepseek-ai/dsh-working-directory'
+      config:
+        # 启动脚本将它规范化为绝对路径并提前创建；默认是本项目的 work/。
+        defaultDirectory: !!js process.env.DSH_DEMO_WORK_DIR
+
+    # 本地命令由官方子进程管理器拥有，退出/取消时负责清理进程。
+    - id: subprocess-local
+      name: '@deepseek-ai/dsh-subprocess-local'
+    - id: bash-local
+      name: '@deepseek-ai/dsh-bash-local'
+      config:
+        # 与会话工作目录一致，也覆盖不带 Agent 上下文时的执行后备目录。
+        cwd: !!js process.env.DSH_DEMO_WORK_DIR
+        timeoutMs: !!js Number(process.env.DSH_DEMO_BASH_TIMEOUT_MS ?? 30000)
+        maxTimeoutMs: 60000
+        maxOutputBytes: 64000
+    - id: shell-env
+      name: '@deepseek-ai/dsh-shell-env'
+    - id: tool-bash
+      name: '@deepseek-ai/dsh-tool-bash'
+      config:
+        # 最小示例只执行前台命令；超时终止，不另外挂载通用后台 jobs。
+        enableRunInBackground: false
+        promoteOnTimeout: false
+
+    # 应用入口，不属于核心服务；负责终端输入输出。
+    # 等官方启动器发布 appReady 后，才创建 Agent 和发起对话。
+    # 基础配置中声明终端入口；Web overlay 通过此 ID 将它禁用。
+    - id: minimal-chat
+      # 相对本 patch 所在目录加载终端插件模块，不是相对 shell 的当前目录。
+      name: './src/plugin.ts'
+      # 开始当前插件的配置对象；缩进决定归属，不能把不同条目的配置混在同一层。
+      config:
+        # 将环境中的字符串开关转换成真正布尔值，供 Config.boolean 校验和入口分支判断。
+        offline: !!js process.env.DSH_DEMO_OFFLINE === '1'
+        # 下面缩进内容是一个 JS 表达式；>- 将文本折叠成一行并去掉尾换行，用于选择适配器路由。
+        provider: !!js >-
+          /* 三元表达式先判断离线开关，再只取其中一侧的路由或模型值；?? 只为缺失的模型设置后备值。 */ process.env.DSH_DEMO_OFFLINE === '1' ? 'demo-offline' : 'deepseek-official'
+        # 下面是选择模型 ID 的 JS 表达式；离线用 echo，真实模式优先 DSH_MODEL，否则用本例默认值。
+        model: !!js >-
+          /* 三元表达式先判断离线开关，再只取其中一侧的路由或模型值；?? 只为缺失的模型设置后备值。 */ process.env.DSH_DEMO_OFFLINE === '1' ? 'echo' : (process.env.DSH_MODEL ?? 'deepseek-flash')

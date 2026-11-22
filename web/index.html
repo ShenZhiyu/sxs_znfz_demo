@@ -1,0 +1,299 @@
+<!-- 声明使用现代 HTML 标准模式；省略时浏览器可能进入兼容旧页面的怪异布局模式。 -->
+<!doctype html>
+<!-- 页面根元素声明简体中文，帮助屏幕阅读器选择发音，并让浏览器正确理解主要语言。 -->
+<html lang="zh-CN">
+<!-- head 存放页面元数据和资源引用，不是聊天消息显示区域。 -->
+<head>
+  <!-- 声明 HTML 使用 UTF-8；服务端响应头也使用同样编码，保证中文正常显示。 -->
+  <meta charset="utf-8">
+  <!-- 让手机按设备 CSS 宽度布局并采用正常初始缩放，否则桌面式虚拟宽度会破坏响应式规则。 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 告诉浏览器本页采用浅色界面，让系统表单控件等默认外观与设计一致。 -->
+  <meta name="color-scheme" content="light">
+  <!-- 设置浏览器标签页标题；它不等于页面中可见的主标题 h1。 -->
+  <title>链路仿真Agent · 对话</title>
+  <!-- 使用空 data favicon，避免浏览器额外请求不存在的 /favicon.ico；服务端 CSP 为 data 图片保留了许可。 -->
+  <link rel="icon" href="data:,">
+  <!-- 加载同源 CSS；开头的 / 表示相对当前站点根路径，而不是相对本地磁盘目录。 -->
+  <link rel="stylesheet" href="/style.css">
+  <!-- 加载浏览器交互脚本；defer 让它在 HTML 解析完后执行，因此 querySelector 能找到下方 DOM 元素。 -->
+  <!-- 调试面板先注册事件监听，聊天脚本随后转发运行记录。 -->
+  <!-- 依赖视图先提供展示 API，调试面板随后传入同一份插件快照。 -->
+  <script src="/dependencies.js" defer></script>
+  <!-- 依赖图投影负责共享引用和环；配置归属只作为可切换的辅助视图。 -->
+  <script src="/plugin-tree-model.js" defer></script>
+  <script src="/debugger.js" defer></script>
+  <!-- 仿真面板只查询已有任务和资源，不自行启动后台计算。 -->
+  <script src="/simulation.js" defer></script>
+  <!-- MCP 管理页独立处理表单和列表，插件树仍负责展示真实配置层级。 -->
+  <script src="/mcp.js" defer></script>
+  <!-- defer 脚本按文档顺序执行：本地解析器 → 安全渲染配置 → 聊天入口；无需访问 CDN。 -->
+  <script src="/markdown-it.js" defer></script>
+  <!-- 上传队列和文件链接先初始化，Markdown 与聊天入口随后使用。 -->
+  <script src="/files.js" defer></script>
+  <script src="/markdown.js" defer></script>
+  <!-- 每轮对话区分助手正文和真实工具事件，依赖上方的 Markdown 渲染器。 -->
+  <script src="/chat-turns.js" defer></script>
+  <!-- 技能页的 Markdown 预览使用同一个安全解析器。 -->
+  <script src="/skills.js" defer></script>
+  <!-- 补全先处理方向键和 Enter；聊天脚本会尊重已处理的键盘事件。 -->
+  <script src="/completion.js" defer></script>
+  <!-- 会话列表读取官方事件存储，历史回放不调用模型。 -->
+  <script src="/history.js" defer></script>
+  <!-- 聊天入口负责输入、SSE 读取以及调度 Markdown 更新。 -->
+  <script src="/app.js" defer></script>
+<!-- 结束元数据区域；后面的 body 才是用户可见页面的主体。 -->
+</head>
+<!-- 开始可见内容；页面结构与样式、交互脚本分文件保存，便于分别学习。 -->
+<body class="history-open">
+  <!-- 为整个应用提供布局容器；CSS 用 flex 列布局把输入区放在页面下方。 -->
+  <!-- 两列工作区：左侧聊天，右侧是可在核心插件停用时继续使用的控制平面。 -->
+  <!-- 历史会话左侧栏默认展开，可用侧栏内的按钮收起；聊天仍保留独立滚动位置。 -->
+  <div id="history-backdrop" class="history-backdrop" aria-hidden="true" hidden></div>
+  <aside id="session-history" class="session-history" aria-labelledby="history-heading">
+    <header class="history-header"><h2 id="history-heading">历史会话</h2><button id="history-close" class="plain-button" type="button" aria-label="收起历史会话侧栏">收起</button></header>
+    <p id="session-current" class="history-current">新对话</p>
+    <div class="history-body">
+      <div class="section-heading"><p>会话自动保存在本机，刷新或重启后可重新打开。</p><button id="sessions-refresh" class="plain-button" type="button">刷新</button></div>
+      <label class="view-label" for="sessions-search">搜索会话</label><input id="sessions-search" class="skills-search" type="search" placeholder="按首条消息搜索">
+      <p id="sessions-state" class="control-hint" role="status"></p>
+      <div id="sessions-list" class="sessions-list" aria-label="历史会话列表"></div>
+      <p class="control-hint">打开历史只读取记录；发送新消息后恢复 Agent。原始 HTTP 调试记录仍仅在服务运行期间保存。</p>
+    </div>
+  </aside>
+  <div class="workspace">
+  <div class="app">
+    <!-- 页头包含品牌和新对话按钮，语义化 header 让页面区域更易识别。 -->
+    <header class="header">
+      <!-- 品牌链接返回首页；装饰图形对辅助技术隐藏，aria-label 为整条链接提供完整名称，内部 span 只用于分层样式。 -->
+      <div class="header-brand">
+        <button id="history-toggle" class="history-toggle" type="button" aria-controls="session-history" aria-expanded="true" title="历史会话侧栏已展开"><span aria-hidden="true">☰</span> 历史</button>
+        <a class="brand" href="/" aria-label="链路仿真Agent 对话首页"><span class="brand-mark" aria-hidden="true">链</span><span>链路仿真Agent</span></a>
+      </div>
+      <!-- id 供 JS 绑定重置逻辑，class 供 CSS 设置外观；type=button 避免成为提交按钮，装饰加号不参与朗读。 -->
+      <button id="new-chat" class="new-chat" type="button"><span aria-hidden="true">＋</span> 新对话</button>
+    <!-- 结束页头区域，其内容不会被添加消息的 JavaScript 覆盖。 -->
+    </header>
+    <!-- 声明主要内容区域，里面先显示模式与欢迎区，再显示实际消息。 -->
+    <main class="main">
+      <!-- 装饰圆点只负责视觉；mode 节点先显示等待文案，app.js 请求公开配置后更新模式文字。 -->
+      <div class="mode-row"><span class="status-dot" aria-hidden="true"></span><span id="mode">正在连接…</span></div>
+      <!-- 初始欢迎区；app.js 通过 hidden 控制它在空对话和已有消息之间切换。 -->
+      <section id="welcome" class="welcome">
+        <!-- 提供欢迎区的小型引导文字，CSS 控制字距和层级，不承担功能逻辑。 -->
+        <span class="eyebrow">LET’S TALK</span>
+        <!-- 页面主标题只描述用户任务；h1 也为页面提供清晰的语义结构。 -->
+        <h1>水下通信链路仿真。</h1>
+        <!-- 显示欢迎说明；br 是明确的换行，文字内容不参与 API 请求。 -->
+        <p>通过 Agent 启动模板化仿真，<br>查看资源申请、任务进度与结果。</p>
+        <!-- 组织预设问题按钮；aria-label 描述这组内容的用途。 -->
+        <div class="suggestions" aria-label="试试这些话题">
+          <!-- data-prompt 保存实际提交的消息，按钮可见文案更短；app.js 用 dataset.prompt 读取该自定义属性。 -->
+          <button type="button" data-prompt="你好，介绍一下你自己。">认识一下 <span aria-hidden="true">↗</span></button>
+          <!-- 第二个预设问题走同一发送流程；无需为每个按钮编写独立的网络请求代码。 -->
+          <button type="button" data-prompt="请用简单的例子解释什么是 Agent。">学点新东西 <span aria-hidden="true">↗</span></button>
+          <!-- 发送明确的 MCP 教学命令，离线模式也能经过真实工具调用和结果回传。 -->
+          <button type="button" data-prompt="/mcp-add 2 3">试试 MCP 加法 <span aria-hidden="true">↗</span></button>
+          <!-- 固定离线规则也会调用真正的仿真 MCP，不在浏览器生成结果。 -->
+          <button type="button" data-prompt="/simulate small">小规模链路仿真 <span aria-hidden="true">↗</span></button>
+          <!-- 资源查询通过 MCP 获取当前配额与本机观测。 -->
+          <button type="button" data-prompt="/sim-resources">查看集群资源 <span aria-hidden="true">↗</span></button>
+        <!-- 闭合预设按钮容器。 -->
+        </div>
+      <!-- 结束欢迎区；隐藏它不会删除后面的消息列表容器。 -->
+      </section>
+      <!-- 每次发送创建独立轮次，内部按真实顺序显示用户问题、助手回答和工具调用结果。 -->
+      <div id="messages" class="messages" role="log" aria-label="对话记录" aria-live="polite"></div>
+    <!-- 结束主内容区；页脚输入区在外部，消息更新不会重建输入框或打断焦点。 -->
+    </main>
+    <!-- 页脚容纳状态提示、消息表单和操作说明；消息区独立滚动，页脚在聊天列底部固定占位。 -->
+    <footer class="composer-wrap">
+      <!-- 空状态区用于展示网络或模型错误；role=status 让错误更新可被辅助技术感知。 -->
+      <p id="notice" class="notice" role="status"></p>
+      <p id="files-upload-notice" class="notice" role="status"></p>
+      <div id="chat-attachments" class="chat-attachments" aria-label="待发送附件" hidden></div>
+      <!-- 候选项使用 listbox；焦点保留在输入框，用 aria-activedescendant 指示当前项。 -->
+      <div id="command-completion" class="command-completion" hidden>
+        <div class="completion-heading"><span id="completion-status" role="status"></span><span>↑↓ 选择 · Tab / Enter 补全 · Esc 关闭</span></div>
+        <div id="completion-list" role="listbox" aria-label="命令补全"></div>
+      </div>
+      <!-- 用真正的 form 统一键盘提交、按钮提交和浏览器必填校验；JS 拦截默认跳转后改用 fetch。 -->
+      <form id="chat-form" class="composer">
+        <button id="chat-upload" type="button" class="plain-button upload-button" aria-label="上传文件" title="上传文件，也可将文件拖入输入区">＋ 文件</button>
+        <input id="chat-file-input" type="file" multiple hidden>
+        <!-- 通过 for 与 textarea 的 id 建立标签关系；sr-only 只视觉隐藏，仍为辅助技术保留输入框名称。 -->
+        <label class="sr-only" for="message">输入消息</label>
+        <!-- 文本可留空以便只发送附件；有效输入与长度由前后端共同校验。 -->
+        <textarea id="message" name="message" rows="1" maxlength="8000" placeholder="输入消息，或输入 / 选择 Skill 与 MCP 工具" aria-autocomplete="list" aria-controls="completion-list" aria-expanded="false"></textarea>
+        <!-- 提交按钮初始禁用，输入非空后由 JS 启用；箭头是装饰，aria-label 提供无障碍名称。 -->
+        <button id="send" class="send" type="submit" aria-label="发送消息" disabled><span aria-hidden="true">↑</span></button>
+      <!-- 结束表单；下方的快捷键说明不属于用户提交的数据。 -->
+      </form>
+      <!-- 说明键盘约定与内存历史限制；手机窄屏会隐藏快捷键提示以节省空间。 -->
+      <div class="composer-meta"><span>支持拖入文件 · Enter 发送 · Shift + Enter 换行</span><span>文件可在右侧“文件”面板下载</span></div>
+    <!-- 结束输入页脚；它与消息列表分离，方便分别滚动和更新。 -->
+    </footer>
+  <!-- 闭合最近打开的 div 容器；按缩进向上查找对应的开始标签，保持 DOM 嵌套关系。 -->
+  </div>
+<!-- 结束页面可见主体；交互行为由 head 中 defer 加载的 app.js 在解析完成后接管。 -->
+
+  <!-- 调试面板不参与消息正文渲染，原始数据始终用 textContent 展示。 -->
+  <aside class="debug-panel" aria-label="Agent 调试面板">
+    <!-- 面板标题和服务状态独立于聊天，核心依赖停止后仍可继续操作。 -->
+    <header class="debug-header"><div><span class="eyebrow">AGENT INSPECTOR</span><h2>运行与调用</h2></div><span id="debug-state" class="state-pill">正在读取</span></header>
+    <!-- 标签切换不同任务，插件启停不会清除已经捕获的调用记录。 -->
+    <nav class="debug-tabs" aria-label="调试视图"><button id="tab-plugins" type="button" class="selected" aria-pressed="true">插件</button><button id="tab-raw" type="button" aria-pressed="false">原始输出</button><button id="tab-timeline" type="button" aria-pressed="false">调用过程</button><button id="tab-simulation" type="button" aria-pressed="false">仿真任务</button><button id="tab-mcp" type="button" aria-pressed="false">MCP 服务</button><button id="tab-skills" type="button" aria-pressed="false">Skill 管理</button><button id="tab-files" type="button" aria-pressed="false">文件</button></nav>
+    <section id="panel-files" class="debug-view" hidden>
+      <div class="section-heading"><div><h3>工作文件</h3><p>上传参考资料，下载 Agent 生成的文档。</p></div><button id="files-refresh" type="button" class="plain-button">刷新文件</button></div>
+      <p id="files-root" class="control-hint"></p>
+      <p class="control-hint">点击文件名称即可下载。已上传资料可重新添加到对话；从待发送队列移除附件不会删除磁盘文件。上传成功不代表已读完内容，Agent 会使用工具按需读取。</p>
+      <p id="files-state" class="control-hint" role="status">正在读取文件…</p>
+      <label class="view-label" for="files-search">搜索文件</label><input id="files-search" class="skills-search" type="search" placeholder="按文件名或相对路径搜索">
+      <div id="files-list" class="files-list" aria-label="工作文件列表"></div>
+    </section>
+    <!-- 全局错误区只显示控制或记录读取错误，不覆盖聊天回复。 -->
+    <p id="debug-notice" class="debug-notice" role="status"></p>
+    <!-- 插件视图按真实配置归属展示层级，同时保留启停与 Fiber 状态。 -->
+    <section id="panel-plugins" class="debug-view">
+      <!-- 启停影响当前进程的所有页面，因此在操作旁说明真实影响。 -->
+      <div class="section-heading"><div><h3>插件</h3><p>查看配置归属、服务依赖与运行状态。</p></div><button id="refresh-plugins" class="plain-button" type="button">刷新</button></div>
+      <!-- 切换只改变展示，不启停插件或清空对话。 -->
+      <div class="plugin-view-switch" role="group" aria-label="插件展示方式"><button id="show-plugin-tree" type="button" aria-pressed="true">插件树</button><button id="show-plugin-dependencies" type="button" aria-pressed="false">依赖详情</button></div>
+      <div id="plugin-tree-view">
+      <!-- 明确说明会话生命周期变化，让用户理解启停后的历史重置。 -->
+      <p class="control-hint">默认按服务依赖展开：父插件依赖下面的提供者；共享节点只展示一次，引用可点击定位。子作用域单列，缺失服务不会隐藏。启停会结束当前会话。</p>
+      <label class="view-label" for="plugin-tree-mode">树形关系</label><select id="plugin-tree-mode"><option value="dependencies">按服务依赖（默认）</option><option value="configuration">按配置归属</option></select>
+      <!-- Loader 是这棵配置条目树的管理者，直接由启动器安装的服务不伪装成配置子节点。 -->
+      <div class="plugin-tree-heading"><strong>插件关系树</strong><span>YAML 开关临时生效 · 网页 MCP 会保存</span></div>
+      <!-- 嵌套列表表达父子关系，容器通过原生按钮折叠；状态来自真实 Loader。 -->
+      <ul id="plugin-list" class="plugin-list" aria-label="插件关系树" role="list"></ul>
+      </div>
+      <!-- 原生 select 和按钮支持键盘浏览；箭头表示依赖方指向提供方。 -->
+      <div id="plugin-dependencies-view" hidden>
+        <p id="dependency-coverage" class="control-hint"></p>
+        <label class="view-label" for="dependency-plugin">选择插件或运行时节点</label>
+        <select id="dependency-plugin"></select>
+        <p id="dependency-summary" class="control-hint" role="status"></p>
+        <div class="dependency-graph" aria-label="所选插件的直接依赖关系">
+          <section><h4>谁依赖它 →</h4><div id="dependency-consumers"></div></section>
+          <section><h4>当前插件 →</h4><div id="dependency-current"></div></section>
+          <section><h4>它依赖谁</h4><div id="dependency-providers"></div></section>
+        </div>
+        <details id="dependency-transitive" class="dependency-transitive"><summary>查看间接依赖与完整服务关系</summary><div id="dependency-transitive-list"></div></details>
+      </div>
+    </section>
+    <!-- Skill 管理只负责指令型技能，实际计算仍由已注册工具完成。 -->
+    <section id="panel-skills" class="debug-view" hidden>
+      <div class="section-heading"><div><h3>Skill 管理</h3><p>管理可供 agent 按需加载的技能指令。</p></div><button id="skills-refresh" type="button" class="plain-button">刷新技能</button></div>
+      <!-- 说明真正的生效方式，避免把技能启用误解为立即执行计算。 -->
+      <p class="control-hint">使用官方 Skill 注册表与加载插件：模型通过 skill 工具读取完整指令，用户可输入 /技能名 显式加载。目录技能由官方文件系统实现发现，源文件只读，启停状态单独保存。保存或启停任意技能会结束当前会话。</p>
+      <p id="skills-notice" class="debug-notice" role="status"></p>
+      <p id="skills-state" class="control-hint">正在读取技能状态…</p>
+      <!-- 搜索只过滤本页列表，不影响模型能看到的启用技能。 -->
+      <label class="view-label" for="skills-search">搜索技能</label><input id="skills-search" class="skills-search" type="search" placeholder="按名称或说明搜索" autocomplete="off">
+      <div id="skills-list" class="skills-list" aria-label="技能列表"></div>
+      <!-- 原始 SKILL.md 作为单一编辑内容，名称和说明从 YAML 解析。 -->
+      <form id="skills-form" class="skills-form">
+        <h3 id="skills-form-title">新建技能</h3>
+        <div class="run-actions"><button id="skills-new" type="button" class="plain-button">新建 / 清空</button><button id="skills-example" type="button" class="plain-button">填入示例</button><button id="skills-import" type="button" class="plain-button">导入 SKILL.md</button></div>
+        <!-- 文件只在浏览器读取；提交保存前不会写入服务端。 -->
+        <input id="skills-file" type="file" accept=".md,text/markdown,text/plain" hidden>
+        <label for="skills-markdown">SKILL.md 内容</label><textarea id="skills-markdown" rows="16" required spellcheck="false" placeholder="---&#10;name: my-skill&#10;description: 说明什么时候应该使用这个技能&#10;---&#10;&#10;# 操作步骤&#10;&#10;在这里填写详细指令。"></textarea>
+        <label class="skills-checkbox"><input id="skills-enabled" type="checkbox">保存后启用</label>
+        <p class="control-hint">name 使用小写字母、数字和单横线，最多 64 位；description 说明使用场景。目录技能可查看、启停、导出或复制，源文件请在磁盘中修改；网页技能可编辑和删除。</p>
+        <div class="run-actions"><button id="skills-save" type="submit" class="plain-button">保存技能</button><button id="skills-preview-button" type="button" class="plain-button">预览 Markdown</button><button id="skills-export-editor" type="button" class="plain-button">导出 SKILL.md</button></div>
+      </form>
+      <!-- 预览只渲染解析后的正文，YAML 元信息单独展示。 -->
+      <section id="skills-preview-section" hidden><h3>技能预览</h3><p id="skills-preview-meta" class="control-hint"></p><div id="skills-preview" class="skill-preview markdown-body"></div></section>
+      <p id="skills-storage" class="control-hint"></p>
+    </section>
+    <!-- MCP 服务管理与普通聊天共用实际客户端和 ToolRuntime。 -->
+    <section id="panel-mcp" class="debug-view" hidden>
+      <!-- 列表展示现有 YAML 服务和网页注册的服务。 -->
+      <div class="section-heading"><div><h3>MCP 服务管理</h3><p>注册服务、管理连接，查看 agent 实际可用的工具。</p></div><button id="mcp-refresh" type="button" class="plain-button">刷新服务</button></div>
+      <!-- 明确配置和会话的行为，避免把工具变更误解为只影响当前标签页。 -->
+      <p class="control-hint">网页配置会保存并在重启后恢复。连接变更会结束所有页面的当前会话；YAML 服务的启停仅在当前进程生效。</p>
+      <!-- 所有错误和服务返回的说明都由脚本使用 textContent 写入。 -->
+      <p id="mcp-notice" class="debug-notice" role="status"></p>
+      <!-- 服务卡片由 API 快照生成，实际工具可以展开查看完整参数。 -->
+      <div id="mcp-list" class="mcp-list" aria-label="MCP 服务列表">正在读取服务…</div>
+      <!-- 表单留在列表之后，编辑时滚动到此处；自动轮询不会覆盖输入。 -->
+      <form id="mcp-form" class="mcp-form">
+        <!-- 编辑 ID 保存在脚本中，不能通过隐藏字段修改其他插件。 -->
+        <h3 id="mcp-form-title">注册 MCP 服务</h3>
+        <!-- 填入本机脚本和唯一名称，保存后即可发现工具。 -->
+        <button id="mcp-example" type="button" class="plain-button">填入本机示例</button>
+        <label for="mcp-name">服务名称</label><input id="mcp-name" required maxlength="32" pattern="[A-Za-z0-9_-]{1,32}" placeholder="例如 acoustic" autocomplete="off">
+        <!-- 传输方式来自现有 MCP 客户端的两种实现。 -->
+        <label for="mcp-transport">连接方式</label><select id="mcp-transport"><option value="stdio">stdio · 启动本机程序</option><option value="streamable-http">Streamable HTTP · 连接服务地址</option></select>
+        <div id="mcp-stdio-fields">
+          <!-- 命令与参数分开传递，不经过 shell 字符串拼接。 -->
+          <label for="mcp-command">程序路径 / 命令</label><input id="mcp-command" placeholder="例如 node" autocomplete="off">
+          <label for="mcp-args">参数（JSON 字符串数组）</label><textarea id="mcp-args" rows="3" spellcheck="false" placeholder='["scripts/mcp-server.mjs"]'></textarea>
+          <label for="mcp-cwd">工作目录（留空使用项目目录）</label><input id="mcp-cwd" autocomplete="off">
+          <!-- 凭据值不从 API 回显，编辑时留空保留，填 {} 明确清空。 -->
+          <label for="mcp-env">环境变量（JSON 对象）</label><textarea id="mcp-env" rows="3" spellcheck="false" autocomplete="off" placeholder='例如 {"API_KEY":"…"}；编辑时留空保留，{} 清空'></textarea>
+        </div>
+        <div id="mcp-http-fields" hidden>
+          <label for="mcp-url">MCP 地址</label><input id="mcp-url" type="url" placeholder="http://127.0.0.1:8000/mcp" autocomplete="off">
+          <label for="mcp-headers">请求头 Headers（JSON 对象）</label><textarea id="mcp-headers" rows="3" spellcheck="false" autocomplete="off" placeholder='例如 {"Authorization":"Bearer …"}；编辑时留空保留，{} 清空'></textarea>
+        </div>
+        <label for="mcp-timeout">工具调用超时（毫秒）</label><input id="mcp-timeout" type="number" min="1000" max="300000" step="1000" value="10000" required>
+        <!-- 保存禁用的服务只登记配置，不会立即启动后台程序。 -->
+        <label class="mcp-checkbox"><input id="mcp-enabled" type="checkbox" checked>保存后启用连接</label>
+        <p class="control-hint">env / Headers 的值只保存到本机配置文件，不在列表回显。修改已有服务时，这两项留空会保留原值。</p>
+        <div class="run-actions"><button id="mcp-submit" type="submit" class="plain-button">保存服务</button><button id="mcp-reset" type="button" class="plain-button">取消编辑 / 清空</button></div>
+      </form>
+      <!-- 显示实际持久化位置，帮助用户备份和理解项目文件。 -->
+      <p id="mcp-storage" class="control-hint"></p>
+    </section>
+    <!-- 仿真任务属于 MCP 后台，可在聊天轮次结束后继续执行。 -->
+    <section id="panel-simulation" class="debug-view" hidden>
+      <!-- 配额明确标记为本机演示值，不伪装成真实计算集群。 -->
+      <h3>水下链路仿真</h3><p class="control-hint">本机演示配额 · 简化数值模型。通过聊天发送 /simulate small 启动；停止生成不会取消后台任务。</p>
+      <!-- 资源余额与每个节点状态都来自同一个 MCP 服务。 -->
+      <div id="simulation-resources" class="simulation-resources">正在查询集群资源…</div>
+      <!-- 全局任务可跨聊天会话查看，当前选择由本页保存。 -->
+      <label class="view-label" for="simulation-select">选择仿真任务</label><select id="simulation-select"><option value="">暂无仿真任务</option></select>
+      <!-- 查询错误不会盖住聊天记录。 -->
+      <p id="simulation-notice" class="debug-notice" role="status"></p>
+      <!-- 任务进度与资源租约保留可访问名称。 -->
+      <p id="simulation-status" class="control-hint" aria-live="polite">发送 /simulate small 开始演示。</p><progress id="simulation-progress" max="100" value="0" aria-label="仿真任务进度"></progress>
+      <!-- 只有显式点击取消才停止后台计算，下载仅生成本机 JSON 文件。 -->
+      <div class="run-actions"><button id="simulation-cancel" type="button" class="plain-button" disabled>取消任务</button><button id="simulation-download" type="button" class="plain-button" disabled>下载任务 JSON</button></div>
+      <!-- 按模板分组展示层级，节点行同时显示其前置依赖与串行锁。 -->
+      <div id="simulation-nodes"></div>
+      <!-- 汇总结果和事件原文均用文本显示，保留全部状态变迁。 -->
+      <h4>结果摘要</h4><pre id="simulation-result" class="raw-content">任务完成后显示。</pre>
+      <!-- 事件顺序由后台连续序号确定，不用前端动画推测执行顺序。 -->
+      <h4>执行事件</h4><pre id="simulation-events" class="raw-content">暂无事件。</pre>
+    </section>
+    <!-- 两个记录视图共用轮次选择和导出工具；原始 JSON 不按长度截断。 -->
+    <div id="run-toolbar" class="run-toolbar" hidden>
+      <!-- 一次网页发送可能触发多个模型请求，因此以网页轮次选择记录。 -->
+      <label for="run-select">选择调用记录</label><select id="run-select"><option value="">尚无调用记录</option></select>
+      <!-- 下载保留全部事件与 HTTP 字节；清空只删除已结束的记录。 -->
+      <div class="run-actions"><button id="refresh-runs" type="button" class="plain-button">刷新记录</button><button id="download-run" type="button" class="plain-button" disabled>下载完整 JSON</button><button id="clear-runs" type="button" class="plain-button">清空已结束记录</button></div>
+    </div>
+    <!-- 原始输出视图区分上游 HTTP 原文、框架分片与请求数据。 -->
+    <section id="panel-raw" class="debug-view" hidden>
+      <!-- 初始选择框架完整分片，离线模拟也有可检查的实际协议内容。 -->
+      <label class="view-label" for="raw-kind">查看内容</label><select id="raw-kind"><option value="chunks">完整模型分片 JSON</option><option value="http">HTTP / SSE 响应原文</option><option value="request">完整请求 JSON</option><option value="reasoning">模型返回的思考文本</option></select>
+      <!-- 这段文字会根据真实数据说明来源，不会声称存在模型未返回的内部内容。 -->
+      <p id="raw-description" class="data-description">发送消息后可查看全部已捕获内容。</p>
+      <!-- pre 保留换行与 JSON 缩进；不使用 innerHTML 解析模型内容。 -->
+      <pre id="raw-content" class="raw-content" tabindex="0">尚无调用记录。</pre>
+    </section>
+    <!-- 调用过程视图默认仅显示边界事件，可切换到全部记录。 -->
+    <section id="panel-timeline" class="debug-view" hidden>
+      <!-- 区分关键步骤与全部事件，避免逐 token 分片淹没实际调用边界。 -->
+      <div class="section-heading"><h3>时间线</h3><select id="timeline-filter" aria-label="时间线过滤"><option value="key">关键步骤</option><option value="all">全部事件</option></select></div>
+      <!-- 完整详情放在可展开项内；界面摘要不改变下载内容。 -->
+      <div id="timeline" class="timeline"><p class="empty-debug">发送消息后查看模型调用过程。</p></div>
+    </section>
+  </aside>
+  <!-- 结束聊天与调试面板组成的工作区。 -->
+  </div>
+</body>
+<!-- 闭合 HTML 根元素，完成整份页面文档。 -->
+</html>
