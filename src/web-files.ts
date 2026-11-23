@@ -189,14 +189,38 @@ export class WebFiles extends AttachmentStore {
       files: files.sort((a, b) => b.modifiedAt - a.modifiedAt), uploads: [...this.receipts.values()].map(row => this.entry(row)), truncated }
   }
 
-  async download(path: string, res: ServerResponse): Promise<void> {
+  private async openWorkFile(path: string, allowInternalLinks: boolean) {
     if (!path || isAbsolute(path) || path.includes('\\') || path.split('/').some(part => !part || part.startsWith('.') || /[\u0000-\u001f]/.test(part))) {
-      throw new ControlError(403, '只允许下载工作目录内的普通文件。')
+      throw new ControlError(403, '只允许访问工作目录内的普通文件。')
     }
-    let target: string
-    try { target = await this.checkContained(join(this.root, path)) }
-    catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') throw new ControlError(404, '文件不存在。'); throw error }
-    const handle = await open(target, constants.O_RDONLY | constants.O_NOFOLLOW)
+    try {
+      const target = await this.checkContained(join(this.root, path))
+      if (!allowInternalLinks && target !== join(await realpath(this.root), path)) {
+        throw new ControlError(403, '附件路径不可使用符号链接。')
+      }
+      return await open(target, constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK)
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      if (code === 'ENOENT' || code === 'ENOTDIR') throw new ControlError(404, '文件不存在。')
+      if (code === 'ELOOP') throw new ControlError(403, '文件路径不可使用符号链接。')
+      throw error
+    }
+  }
+
+  async attach(path: string, signal: AbortSignal) {
+    signal.throwIfAborted()
+    const handle = await this.openWorkFile(path, false)
+    try {
+      const info = await handle.stat()
+      if (!info.isFile()) throw new ControlError(403, '只能将普通文件添加为附件。')
+      if (info.size > MAX_FILE_BYTES) throw new ControlError(413, '单个文件不能超过 20 MiB。')
+      const contents = async function* () { yield* handle.createReadStream({ signal }) }
+      return await this.upload(contents(), basename(path), signal)
+    } finally { await handle.close() }
+  }
+
+  async download(path: string, res: ServerResponse): Promise<void> {
+    const handle = await this.openWorkFile(path, true)
     try {
       const info = await handle.stat()
       if (!info.isFile()) throw new ControlError(403, '不能下载目录。')

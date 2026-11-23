@@ -26,7 +26,9 @@ window.dshFiles = (() => {
       const row = node('div', undefined, 'attachment-chip')
       if (item.receipt) row.append(link(item.receipt))
       else row.append(node('span', `${item.name} · ${size(item.bytes)}`))
-      row.append(node('span', item.status === 'ready' ? '待发送' : item.status === 'uploading' ? '正在上传…' : item.error, item.status === 'error' ? 'file-error' : 'file-state'))
+      row.append(node('span', item.status === 'ready' ? '待发送'
+        : item.status === 'uploading' ? (item.workspacePath ? '正在添加…' : '正在上传…') : item.error,
+      item.status === 'error' ? 'file-error' : 'file-state'))
       if (item.status === 'error') {
         const retry = node('button', '重试', 'plain-button')
         retry.type = 'button'; retry.disabled = busy
@@ -52,18 +54,46 @@ window.dshFiles = (() => {
     item.status = 'uploading'; item.error = ''; item.controller = new AbortController()
     renderQueue(); changed()
     try {
-      const response = await fetch('/api/files/upload', { method: 'POST',
-        headers: { 'Content-Type': 'application/octet-stream', 'X-File-Name': encodeURIComponent(item.name) },
-        body: item.file, signal: item.controller.signal })
+      const response = item.workspacePath
+        ? await fetch('/api/files/attach', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: item.workspacePath }), signal: item.controller.signal })
+        : await fetch('/api/files/upload', { method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream', 'X-File-Name': encodeURIComponent(item.name) },
+          body: item.file, signal: item.controller.signal })
       const receipt = await response.json()
-      if (!response.ok) throw new Error(receipt.error || '上传失败')
+      if (!response.ok) throw new Error(receipt.error || '添加附件失败')
       if (!queue.includes(item)) return
+      if (queue.reduce((sum, value) => sum + (value === item ? 0 : value.bytes), receipt.bytes) > (state?.maxMessageBytes ?? 100 * 1024 ** 2)) {
+        throw new Error('本条消息附件合计不能超过 100 MiB。')
+      }
+      item.bytes = receipt.bytes
       item.receipt = receipt; item.status = 'ready'
       void refresh()
     } catch (error) {
       if (!queue.includes(item)) return
-      item.status = 'error'; item.error = error.message || '上传失败'
+      item.status = 'error'; item.error = error.message || '添加附件失败'
     } finally { renderQueue(); changed() }
+  }
+
+  function attachWorkFile(file) {
+    if (busy) { problem('请在本轮生成结束后添加文件。'); return false }
+    if (queue.some(item => item.workspacePath === file.path || item.receipt?.path === file.path)) {
+      problem('该文件已经在当前附件队列中。'); return false
+    }
+    if (file.bytes > (state?.maxFileBytes ?? 20 * 1024 ** 2)) {
+      problem(`${file.name} 超过单文件 20 MiB 上限。`); return false
+    }
+    if (queue.length >= (state?.maxAttachments ?? 10)
+      || queue.reduce((sum, item) => sum + item.bytes, file.bytes) > (state?.maxMessageBytes ?? 100 * 1024 ** 2)) {
+      problem('当前附件数量或总大小已达上限。'); return false
+    }
+    problem('')
+    const receipt = state?.uploads.find(upload => upload.path === file.path) ?? null
+    const item = { workspacePath: file.path, name: file.name, bytes: file.bytes, receipt, status: receipt ? 'ready' : 'uploading' }
+    queue.push(item)
+    if (receipt) { renderQueue(); changed() }
+    else void upload(item)
+    return true
   }
 
   function add(files) {
@@ -96,13 +126,7 @@ window.dshFiles = (() => {
         const attach = node('button', '添加为附件', 'plain-button')
         attach.type = 'button'; attach.disabled = busy
         attach.addEventListener('click', () => {
-          const receipt = uploads.get(file.path)
-          if (queue.some(item => item.receipt?.id === receipt.id)) { problem('该文件已经在当前附件队列中。'); return }
-          if (queue.length >= 10 || queue.reduce((sum, item) => sum + item.bytes, 0) + receipt.bytes > 100 * 1024 ** 2) {
-            problem('当前附件数量或总大小已达上限。'); return
-          }
-          queue.push({ name: receipt.name, bytes: receipt.bytes, receipt, status: 'ready' })
-          renderQueue(); changed(); $('message').focus()
+          if (attachWorkFile(file)) $('message').focus()
         })
         row.append(attach)
       }
@@ -120,7 +144,8 @@ window.dshFiles = (() => {
         const value = await response.json()
         if (!response.ok) throw new Error(value.error || '无法读取文件列表')
         state = value; renderFiles()
-      } catch (error) { $('files-state').textContent = error.message }
+        return value
+      } catch (error) { $('files-state').textContent = error.message; return null }
       finally { reading = null }
     })()
     return reading
@@ -139,7 +164,7 @@ window.dshFiles = (() => {
   setInterval(() => { if (!document.hidden && !$('panel-files').hidden) void refresh() }, 5000)
   void refresh()
   return {
-    link, refresh,
+    link, refresh, attachWorkFile,
     hasFiles: () => queue.some(item => item.status === 'ready'),
     blocked: () => queue.some(item => item.status !== 'ready'),
     take() { const sent = queue.map(item => item.receipt); queue = []; renderQueue(); return sent },

@@ -3,16 +3,17 @@ import { ToolCallId, type GenerateOptions, type StreamChunk } from '@deepseek-ai
 import { randomUUID } from 'node:crypto'
 
 export function* offlineMcp(options: GenerateOptions, showPlatformResults = false): Generator<StreamChunk, boolean> {
-  // 只处理当前用户的 /mcp 命令，避免把前一轮工具结果当作本轮结果。
+  // 只处理当前用户的 MCP 命令，避免把前一轮工具结果当作本轮结果。
   const index = options.messages.findLastIndex(message => message.role === 'user' && (message.source === undefined || message.source.kind === 'user'))
   const prompt = options.messages[index]?.content.filter(block => block.type === 'text').map(block => block.text).join('') ?? ''
-  if (!/^\/mcp(?:\s|$)/.test(prompt)) return false
-  const match = prompt.trim().match(/^\/mcp\s+(\S+)(?:\s+([\s\S]+))?$/)
-  const name = match?.[1], raw = match?.[2] ?? '{}'
+  const command = prompt.trim()
+  if (!/^\/mcp(?:__|\s|$)/.test(command)) return false
+  const match = command.match(/^\/(?:mcp\s+(\S+)|(mcp__\S+))(?:\s+([\s\S]+))?$/)
+  const name = match?.[1] ?? match?.[2], raw = match?.[3] ?? '{}'
   const result = options.messages.slice(index + 1).findLast(message => message.role === 'tool')
   let text = ''
   let args: unknown
-  if (!name) text = '用法：/mcp 完整工具名 JSON参数，例如 /mcp mcp__environment__get_environment_config。无参数时可省略 JSON。'
+  if (!name) text = '用法：/mcp__服务名__工具名 JSON参数，例如 /mcp__environment__get_environment_config。无参数时可省略 JSON。'
   else if (result?.role === 'tool') {
     text = `MCP ${result.isError ? '调用失败' : '调用完成'}。完整原始内容请查看工具返回结果。`
     if (/^mcp__(environment|acoustic_field|signal_processing|replay|evaluation)__/.test(name)) {

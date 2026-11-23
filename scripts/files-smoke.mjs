@@ -91,6 +91,18 @@ try {
   const artifact = listed.files.find(file => file.name === '标书_20261021_演示.md')
   assert.ok(artifact)
   assert.equal(await (await api(artifact.downloadUrl)).text(), 'DOCUMENT_OUTPUT_MARKER')
+  const attach = await api('/api/files/attach', { path: artifact.path })
+  assert.equal(attach.status, 201)
+  const artifactReceipt = await attach.json()
+  assert.equal(artifactReceipt.name, artifact.name)
+  assert.notEqual(artifactReceipt.path, artifact.path)
+  const attachmentRun = await chat(id, '请参考工作区产物', [artifactReceipt.id])
+  const attachedMessage = attachmentRun.events.find(event => event.kind === 'session/user/message'
+    && event.data.data?.content?.some(block => block.type === 'file'))
+  assert.equal(attachedMessage.data.data.content.find(block => block.type === 'file').attachment.name, artifact.name)
+  await writeFile(generated, 'UPDATED_OUTPUT')
+  assert.equal(await (await api(artifactReceipt.downloadUrl)).text(), 'DOCUMENT_OUTPUT_MARKER')
+  await writeFile(generated, 'DOCUMENT_OUTPUT_MARKER')
   assert.ok(!listed.files.some(file => file.name.startsWith('.')))
   for (const attachments of [[randomUUID()], [receipt.id, receipt.id], [{ path: receipt.path }], Array.from({ length: 11 }, () => randomUUID())]) {
     const response = await api('/api/chat', { sessionId: id, message: '拒绝伪造引用', attachments })
@@ -115,9 +127,14 @@ try {
   const outside = join(temporary, 'private.txt')
   await writeFile(outside, 'OUTSIDE_WORK_ROOT')
   await symlink(outside, join(work, 'escape.txt'))
+  await symlink(generated, join(work, 'internal-link.md'))
   for (const path of ['../private.txt', '/etc/passwd', 'escape.txt', 'uploads/' + receipt.id + '/.upload.json', 'tenders']) {
     assert.equal((await api('/api/files/download?path=' + encodeURIComponent(path))).status, 403, path)
+    assert.equal((await api('/api/files/attach', { path })).status, 403, path)
   }
+  assert.equal((await api('/api/files/attach', { path: 'internal-link.md' })).status, 403)
+  assert.equal((await api('/api/files/attach', { path: 'missing.docx' })).status, 404)
+  assert.equal((await api('/api/files/attach', {})).status, 400)
   assert.equal((await api('/api/files/download?path=missing.docx')).status, 404)
   assert.ok(!(await (await api('/api/files')).json()).files.some(file => file.path === 'escape.txt'))
   await chmod(join(work, other.path), 0o600)
@@ -130,6 +147,7 @@ try {
   app = await start()
   assert.deepEqual(Buffer.from(await (await api(receipt.downloadUrl)).arrayBuffer()), bytes)
   await chat(await session(), '恢复后的文件', [receipt.id])
+  await chat(await session(), '恢复后的工作区附件', [artifactReceipt.id])
   assert.equal(await (await api(artifact.downloadUrl)).text(), 'DOCUMENT_OUTPUT_MARKER')
   console.log('文件 smoke 通过：流式上传、原样存储、重名隔离、官方附件消息、Bash 实读、产物下载、重启恢复、超限/取消清理和下载范围校验。')
 } finally {

@@ -97,7 +97,7 @@ function startAgent(mode, env) {
   }
 }
 
-async function chat(origin) {
+async function chat(origin, message = '/mcp__environment__get_environment_config') {
   const request = async (path, body) => {
     const response = await fetch(origin + path, {
       method: body === undefined ? 'GET' : 'POST',
@@ -110,7 +110,7 @@ async function chat(origin) {
   }
   assert.doesNotMatch(await (await request('/')).text(), /id="tab-simulation"/)
   const { sessionId } = await (await request('/api/sessions', {})).json()
-  const response = await request('/api/chat', { sessionId, message: '/mcp mcp__environment__get_environment_config' })
+  const response = await request('/api/chat', { sessionId, message })
   const events = (await response.text()).trim().split('\n\n').map(block => {
     const [event, data] = block.split('\n')
     return { type: event.slice(7), data: JSON.parse(data.slice(6)) }
@@ -286,7 +286,7 @@ try {
   const terminal = startAgent('demo', env)
   try {
     await terminal.ready(/每行是一轮对话/)
-    terminal.child.stdin.end('/mcp mcp__environment__get_environment_config\n/exit\n')
+    terminal.child.stdin.end('/mcp__environment__get_environment_config\n/exit\n')
     const result = await terminal.closed
     assert.equal(result.code, 0, result.errors)
     assert.match(result.output, /MCP 调用完成/)
@@ -322,6 +322,8 @@ try {
     const tools = events.find(event => event.kind === 'llm/request').data.request.tools
     assert.deepEqual(tools.filter(tool => tool.name.startsWith('mcp__')).map(tool => tool.name).sort(), expectedPublic)
     assert.ok(events.some(event => event.kind === 'session/tool/result' && JSON.stringify(event).includes('analysisDefaults')))
+    await chat(origin, '/mcp__environment__list_environment_datasets {"published":true}')
+    assert.equal(requests.at(-1).url, '/mock/v1/env/datasets?published=true')
     await setEnabled(false)
     const disabled = await chat(origin)
     const remaining = disabled.find(event => event.kind === 'llm/request').data.request.tools
@@ -329,7 +331,7 @@ try {
       expectedPublic.filter(name => !name.startsWith('mcp__environment__')))
     assert.ok(!disabled.some(event => event.kind === 'session/tool/call'))
     await setEnabled(true)
-    const restored = await chat(origin)
+    const restored = await chat(origin, '/mcp mcp__environment__get_environment_config')
     assert.ok(restored.some(event => event.kind === 'session/tool/result' && JSON.stringify(event).includes('analysisDefaults')))
     await stop(mock)
     const failed = await chat(origin)

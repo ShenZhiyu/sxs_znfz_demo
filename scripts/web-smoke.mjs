@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 // 持久化测试记录保存在临时目录，避免污染用户会话。
 import { mkdtemp, rm } from 'node:fs/promises'
+import { request as httpRequest } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 // 导入 file: URL 到本机文件路径的转换函数，避免直接把 URL 当操作系统路径使用。
@@ -19,7 +20,7 @@ async function start(offline, env = {}) {
   // 用真实 Web 启动命令和随机空闲端口运行；条件展开只在离线时追加开关，避免固定端口冲突。
   const child = spawn(process.execPath, ['scripts/run.mjs', 'web', '--port', '0', ...(offline ? ['--offline'] : [])], {
     // 固定脚本工作目录，并让显式测试环境覆盖继承环境，后面的缺密钥场景会用到它。
-    cwd, env: { ...process.env, DSH_DEMO_SESSION_DIR: sessionDirectory, ...env },
+    cwd, env: { ...process.env, DSH_DEMO_SESSION_DIR: sessionDirectory, DSH_DEMO_PUBLIC_ORIGIN: '', ...env },
   // 闭合回调函数或对象参数，再闭合外层调用；读到这里才完成这次注册或构造表达式。
   })
   // 立即结束标准输入；Web 服务应继续运行，这也能发现终端入口没有被正确禁用的组合错误。
@@ -186,6 +187,47 @@ try {
   console.log('输入检查、来源检查和删除会话通过。')
 // 无论断言是否失败，都停止本组 Web 进程，释放实际监听的本机端口。
 } finally { await app.stop() }
+
+const externalOrigin = 'https://example-codespace-3080.app.github.dev'
+const externalHost = new URL(externalOrigin).host
+const externalApp = await start(true, { DSH_DEMO_PUBLIC_ORIGIN: externalOrigin + '/' })
+// 直接向本机连接发送代理预期保留的 Host，避免 fetch 根据连接地址生成 Host。
+function proxyRequest(path, headers, body) {
+  return new Promise((resolve, reject) => {
+    const req = httpRequest(externalApp.origin + path, {
+      method: body === undefined ? 'GET' : 'POST',
+      headers: { 'Content-Type': 'application/json', ...headers },
+    }, res => {
+      let text = ''
+      res.setEncoding('utf8').on('data', chunk => { text += chunk })
+      res.on('end', () => resolve({ status: res.statusCode, text }))
+      res.on('error', reject)
+    })
+    req.setTimeout(10000, () => req.destroy(new Error('外部地址测试超时')))
+    req.on('error', reject)
+    req.end(body === undefined ? undefined : JSON.stringify(body))
+  })
+}
+try {
+  assert.equal((await fetch(externalApp.origin + '/')).status, 200)
+  assert.equal((await proxyRequest('/', { Host: externalHost })).status, 200)
+  const externalHeaders = { Host: externalHost, Origin: externalOrigin }
+  const session = await proxyRequest('/api/sessions', externalHeaders, {})
+  assert.equal(session.status, 201)
+  const { sessionId } = JSON.parse(session.text)
+  const response = await proxyRequest('/api/chat', externalHeaders, { sessionId, message: '转发测试' })
+  assert.equal(response.status, 200)
+  assert.match(response.text, /event: done/)
+  for (const headers of [
+    { Host: externalHost, Origin: externalApp.origin },
+    { Host: externalHost, Origin: 'https://example.invalid' },
+    { Origin: externalOrigin },
+    { Host: 'example.invalid', 'X-Forwarded-Host': externalHost, Origin: externalOrigin },
+  ]) {
+    assert.equal((await proxyRequest('/api/sessions', headers, {})).status, 403)
+  }
+  console.log('外部访问地址通过：页面、同源对话、拒绝混用地址和伪造转发头。')
+} finally { await externalApp.stop() }
 
 // 清空凭据并固定本机无效端点，验证失败传播，不访问真实模型 API。
 // 启动真实适配器但明确清空凭据，并限定本机无效端点，专门测试失败传播而不访问外部模型。

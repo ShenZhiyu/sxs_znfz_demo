@@ -91,7 +91,7 @@
           <!-- 第二个预设问题走同一发送流程；无需为每个按钮编写独立的网络请求代码。 -->
           <button type="button" data-prompt="请用简单的例子解释什么是 Agent。">学点新东西 <span aria-hidden="true">↗</span></button>
           <!-- 发送明确的 MCP 教学命令，离线模式也能经过真实工具调用和结果回传。 -->
-          <button type="button" data-prompt="/mcp mcp__environment__get_environment_config">查询环境配置 <span aria-hidden="true">↗</span></button>
+          <button type="button" data-prompt="/mcp__environment__get_environment_config">查询环境配置 <span aria-hidden="true">↗</span></button>
         <!-- 闭合预设按钮容器。 -->
         </div>
       <!-- 结束欢迎区；隐藏它不会删除后面的消息列表容器。 -->
@@ -109,7 +109,7 @@
       <!-- 候选项使用 listbox；焦点保留在输入框，用 aria-activedescendant 指示当前项。 -->
       <div id="command-completion" class="command-completion" hidden>
         <div class="completion-heading"><span id="completion-status" role="status"></span><span>↑↓ 选择 · Tab / Enter 补全 · Esc 关闭</span></div>
-        <div id="completion-list" role="listbox" aria-label="命令补全"></div>
+        <div id="completion-list" role="listbox" aria-label="输入补全"></div>
       </div>
       <!-- 用真正的 form 统一键盘提交、按钮提交和浏览器必填校验；JS 拦截默认跳转后改用 fetch。 -->
       <form id="chat-form" class="composer">
@@ -118,7 +118,7 @@
         <!-- 通过 for 与 textarea 的 id 建立标签关系；sr-only 只视觉隐藏，仍为辅助技术保留输入框名称。 -->
         <label class="sr-only" for="message">输入消息</label>
         <!-- 文本可留空以便只发送附件；有效输入与长度由前后端共同校验。 -->
-        <textarea id="message" name="message" rows="1" maxlength="8000" placeholder="输入消息，或输入 / 选择 Skill 与 MCP 工具" aria-autocomplete="list" aria-controls="completion-list" aria-expanded="false"></textarea>
+        <textarea id="message" name="message" rows="1" maxlength="8000" placeholder="输入消息 · @ 添加工作区文件 · / 选择命令" aria-autocomplete="list" aria-controls="completion-list" aria-expanded="false"></textarea>
         <!-- 提交按钮初始禁用，输入非空后由 JS 启用；箭头是装饰，aria-label 提供无障碍名称。 -->
         <button id="send" class="send" type="submit" aria-label="发送消息" disabled><span aria-hidden="true">↑</span></button>
       <!-- 结束表单；下方的快捷键说明不属于用户提交的数据。 -->

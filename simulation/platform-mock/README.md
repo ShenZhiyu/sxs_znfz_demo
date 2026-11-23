@@ -38,8 +38,8 @@ curl 'http://127.0.0.1:3081/mock/v1/field/simulations' \
 保持 HTTP Mock 运行，在另一个终端执行 `npm run demo -- --offline` 或 `npm run web -- --offline`。五组 MCP 客户端通过独立的 stdio 连接加载相应平台的工具。可在聊天中发送：
 
 ```text
-/mcp mcp__environment__get_environment_config
-/mcp mcp__signal_processing__calculate_bit_error_rate {"expectedBits":[0,1,1,0],"actualBits":[0,1,0,0]}
+/mcp__environment__get_environment_config
+/mcp__signal_processing__calculate_bit_error_rate {"expectedBits":[0,1,1,0],"actualBits":[0,1,0,0]}
 ```
 
 MCP 工具名由服务组和功能组成，形如 `mcp__<服务组>__<功能>`。五个服务可以分别启停。
